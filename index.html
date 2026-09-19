@@ -216,6 +216,45 @@
     will-change: transform;
   }
 
+  /* ── 頁首／頁尾的讓位帶 ─────────────────
+     頁首和頁尾沒有底色（靠 mix-blend-difference 直接顯字），
+     所以捲動的內容會從品牌字和「ESC TO GO BACK」底下穿過去，
+     兩邊的字就疊在一起——看起來就像內文一路撞到左上角的 logo。
+
+     在會捲動的章節上下各鋪一道和該章底色同色的漸層，
+     內容在碰到頁首之前就先沒入背景。
+
+     用貼在 .scene 上的偽元素，不是捲動容器的 mask：
+     mask 會讓整個捲動區每一幀重繪，手機上會更卡。
+     靜止時捲動區頂端有 7rem 的留白，漸層帶只有 5rem，不會蓋到標題。 */
+  .scene:not([data-scene="hero"]):not([data-scene="intro"]):not([data-scene="teams"])::before,
+  .scene:not([data-scene="hero"]):not([data-scene="intro"]):not([data-scene="teams"])::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .scene:not([data-scene="hero"]):not([data-scene="intro"]):not([data-scene="teams"])::before {
+    top: 0;
+    height: 5rem;
+    background: linear-gradient(to bottom,
+                var(--cover-bg, var(--bg)) 0,
+                var(--cover-bg, var(--bg)) 42%,
+                transparent 100%);
+  }
+
+  .scene:not([data-scene="hero"]):not([data-scene="intro"]):not([data-scene="teams"])::after {
+    bottom: 0;
+    height: 4.5rem;
+    background: linear-gradient(to top,
+                var(--cover-bg, var(--bg)) 0,
+                var(--cover-bg, var(--bg)) 42%,
+                transparent 100%);
+  }
+
   /* 分鏡內容若超出視窗（窄螢幕、橫躺手機）就自己捲，頁面本身仍然不捲 */
   .scene-inner {
     width: 100%;
@@ -400,6 +439,43 @@
     color: rgba(255, 255, 255, .4);
     padding: .25rem .1rem;
     transition: color .4s var(--ease);
+  }
+
+  /* ── 手機頁首：讓它真的裝得下 ─────────
+     品牌字是 Syne ExtraBold 配 .22em 字距，實測 282px 寬。
+     再加語言切換 95px、漢堡 26px 和左右各 24px 留白，
+     連 430px 的機身都超出 25px —— 漢堡被擠到畫面外，
+     語言切換被切掉。（沙箱載不到 Syne 時只有 183px，量不出這件事。）
+
+     手機版把語言切換收進選單，頁首只留品牌與漢堡；
+     更窄的機身再把品牌字縮一階。 */
+  @media (max-width: 700px) {
+    header #langSwitch { display: none; }
+    #brand { font-size: 13px; letter-spacing: .18em; }
+  }
+
+  @media (max-width: 374px) {
+    #brand { font-size: 11.5px; letter-spacing: .13em; }
+  }
+
+  /* 收進選單裡的語言切換：壓在選單下緣、頁尾之上 */
+  .menu-lang {
+    position: absolute;
+    left: 50%;
+    bottom: max(6.5rem, 13svh);
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity .45s ease .18s;
+  }
+
+  .menu-overlay.is-open .menu-lang { opacity: 1; }
+  .menu-lang:empty { display: none; }
+  .menu-lang .lang { gap: .9rem; }
+
+  /* 選單裡是主要的切換入口，觸控目標要夠大 */
+  .menu-lang .lang button {
+    font-size: calc(.72rem * var(--fs-label));
+    padding: .6rem .5rem;
   }
 
   .lang button[aria-current="true"] { color: #fff; }
@@ -1597,9 +1673,13 @@
   }
 
   /* ── 顆粒質感 ───────────────────────── */
+  /* inset 只要留得下位移就夠。原本是 -150%（寬高各 4 倍視窗 ＝ 16 倍螢幕面積）：
+     390×844、DPR 3 的手機上那一層是 4700 萬個像素，還疊在所有東西之上、
+     每秒重繪六次 —— 捲動會卡很大一部分是它。
+     位移最多用到 8%，-14% 的邊綽綽有餘（最壞情況仍蓋滿視窗），面積剩 1.3 倍。 */
   .grain {
     position: fixed;
-    inset: -150%;
+    inset: -14%;
     z-index: 110;
     pointer-events: none;
     opacity: .07;
@@ -1723,6 +1803,9 @@
       <span class="idx">05</span><span class="label" data-i18n="menu.contact">Contact Us</span>
     </a>
   </nav>
+
+  <!-- 手機頁首塞不下語言切換，窄螢幕時整個節點搬到這裡（見 syncLangHome） -->
+  <div class="menu-lang" id="menuLangSlot"></div>
 </div>
 
 <!-- ── 00 Intro：捲動控制的過場影片 ──
@@ -1731,8 +1814,11 @@
 <section class="scene scene-intro" data-scene="intro" aria-hidden="true">
   <!-- 兩段各自獨立，不併成一條。併檔要把整條重新編碼，時間軸容易不穩，
        交界就會頓一下。分開之後兩支都用原檔尺寸直接轉，只加密關鍵影格。
-       水波紋不在這裡做，已經烘進影片的畫格裡了（見下方 introSeek 的註解），
-       所以這一層只剩兩支疊著溶接，外加一道很輕的霧化 -->
+
+       交界不做任何霧化或水波紋。之前是把效果烘進畫格裡，結果第二段
+       前八秒全是糊的顆粒，捲到那裡畫面等於空白，看起來也像蒙了一層遮罩、
+       畫質很差。現在兩支都是原色原畫質，交界純粹靠兩層疊著淡入淡出。
+       （執行時掛 blur 濾鏡的版本量過：54fps 掉到 18.6fps，不能用。） -->
   <div class="intro-stage" id="introStage" aria-hidden="true">
     <video class="intro-video" id="introVideo" muted playsinline preload="none"></video>
     <video class="intro-video intro-b" id="introVideoB" muted playsinline preload="none"></video>
@@ -2798,13 +2884,27 @@
     const restVideo = document.getElementById('restVideo');
     let restOn = false;
 
-    function syncRest(inner) {
-      if (inner === restOn) { return; }
+    /* 這幾章的底色是不透明的，背景影片整片被蓋住，再解碼純粹是白費。
+       手機上多一支 720p 影片一直解，捲動就少一分餘裕。 */
+    const OPAQUE_SCENES = ['teams'];
+
+    function syncRest(inner, name) {
+      /* 蓋住與否每次換章都要重算，不能跟 inner 一起短路掉 */
+      const hidden = OPAQUE_SCENES.indexOf(name) >= 0;
+      if (!reduce && restOn && hidden) { restVideo.pause(); }
+
+      if (inner === restOn) {
+        if (!reduce && restOn && !hidden && restVideo.paused) {
+          restVideo.play().catch(() => {});
+        }
+        return;
+      }
+
       restOn = inner;
       if (reduce) { return; }
       if (inner) {
         try { restVideo.currentTime = 0; } catch (err) { /* 還沒載好就下一次再說 */ }
-        restVideo.play().catch(() => { /* 擋自動播放就維持靜幀 */ });
+        if (!hidden) { restVideo.play().catch(() => { /* 擋自動播放就維持靜幀 */ }); }
         /* 首頁那層已經淡到看不見，沒有必要繼續解碼。
            等淡出跑完才停，中途停會在溶接途中卡住一格 */
         setTimeout(() => { if (restOn) { bgVideo.pause(); } }, 900);
@@ -3132,7 +3232,7 @@
       root.classList.toggle('is-inner', name !== 'hero');
       /* 米白底的章節：觸控版的頁首靠這個把字翻成墨色（見 .burger 附近的說明） */
       root.classList.toggle('is-lightbg', name === 'teams');
-      syncRest(name !== 'hero');
+      syncRest(name !== 'hero', name);
       syncChrome();
       watchScene(to);
       backBtn.hidden = name === 'hero' || menuOverlay.classList.contains('is-open');
@@ -3415,6 +3515,27 @@
     });
 
     document.getElementById('brand').addEventListener('click', () => goTo('hero'));
+    /* ── 語言切換搬家 ───────────────────
+       頁首在手機上裝不下「品牌＋語言＋漢堡」：Syne ExtraBold 的品牌字
+       實測 282px，加上語言 95px、漢堡 26px 與左右留白，連 430px 的機身
+       都超出去，漢堡因此被擠出畫面外。窄螢幕把語言切換整個節點搬進選單，
+       寬螢幕再搬回頁首。搬的是同一個節點，事件與 aria-current 都跟著走，
+       不需要複製第二份，也就不會有兩份狀態對不上的問題。 */
+    const langSwitch = document.getElementById('langSwitch');
+    const langHome = langSwitch.parentNode;
+    const langSlot = document.getElementById('menuLangSlot');
+    const LANG_BREAK = 700;
+
+    function syncLangHome() {
+      const target = innerWidth <= LANG_BREAK ? langSlot : langHome;
+      if (langSwitch.parentNode === target) { return; }
+      if (target === langHome) { target.insertBefore(langSwitch, target.firstChild); }
+      else { target.appendChild(langSwitch); }
+    }
+
+    syncLangHome();
+    addEventListener('resize', syncLangHome);
+
     document.getElementById('burger').addEventListener('click', () => {
       if (menuOverlay.classList.contains('is-open')) { closeMenu(); } else { openMenu(); }
     });
@@ -4423,7 +4544,7 @@
          HAZE 額外再補的模糊（px）。霧化也已經烘進畫格裡了，所以
               預設 0 —— 執行時一個濾鏡都不掛，交界不會掉幀。
               覺得還不夠朦朧再往上加，代價是那一秒要多一層合成 */
-    const INTRO_FX_WIN = 0.07;
+    const INTRO_FX_WIN = 0.09;   /* 沒有烘進去的霧之後，疊接的範圍拉長一點，交界才不生硬 */
     const INTRO_FX_HAZE = 0;
 
     let introP = 0;                                    /* 目前進度 0–1 */
@@ -4512,8 +4633,9 @@
       if (mix > 0) { introSeekTo(introVideoB, clamp((p - s.at) / Math.max(1 - s.at, 1e-4), 0, 1) * s.b); }
       introVideoB.style.opacity = mix.toFixed(3);
 
-      /* 霧化：離交界越近越糊，正中央最強。水波紋已經在畫格裡了，
-         這裡只補一層薄霧把兩段的接縫化開 */
+      /* 霧化目前關著（INTRO_FX_HAZE = 0）：量過 blur 濾鏡會把 54fps
+         打到 18.6fps。交界改由上面那行的 opacity 疊接處理。
+         這段留著是為了之後想再試的時候有現成的鉤子 */
       const k = 1 - Math.min(Math.abs(p - s.at) / win, 1);
       const e = k * k * (3 - 2 * k);
       if (e < .002 || INTRO_FX_HAZE <= 0) { introFxClear(); return; }
@@ -4772,12 +4894,18 @@
         ring.style.transform = `translate(${ringX}px, ${ringY}px)`;
       }
 
-      /* 大標的視差。lerp 讓它慢半拍跟上，直接跟會太神經質 */
+      /* 大標的視差。lerp 讓它慢半拍跟上，直接跟會太神經質。
+         已經到位就不要再寫 —— lerp 永遠差那麼一點點，不擋掉的話
+         等於每幀都對同一個元素寫一次 transform，靜止時也在燒樣式重算 */
       if (fxParTarget) {
-        fxPar.x = lerp(fxPar.x, fxPar.tx, .06);
-        fxPar.y = lerp(fxPar.y, fxPar.ty, .06);
-        fxParTarget.style.transform =
-          'translate3d(' + fxPar.x.toFixed(2) + 'px,' + fxPar.y.toFixed(2) + 'px,0)';
+        const dx = fxPar.tx - fxPar.x;
+        const dy = fxPar.ty - fxPar.y;
+        if (Math.abs(dx) > .05 || Math.abs(dy) > .05) {
+          fxPar.x = lerp(fxPar.x, fxPar.tx, .06);
+          fxPar.y = lerp(fxPar.y, fxPar.ty, .06);
+          fxParTarget.style.transform =
+            'translate3d(' + fxPar.x.toFixed(2) + 'px,' + fxPar.y.toFixed(2) + 'px,0)';
+        }
       }
 
       requestAnimationFrame(frame);
