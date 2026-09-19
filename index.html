@@ -1550,6 +1550,52 @@
   .is-menu .burger span:nth-child(2) { opacity: 0; }
   .is-menu .burger span:nth-child(3) { transform: translateY(-4px) rotate(-45deg); }
 
+  /* 觸控裝置上的兩個修正：
+
+     一、1px 的髮絲線太細。在 mix-blend-difference 造出來的混色圖層裡，
+         iOS Safari 有機會把它整條抹掉；就算畫得出來，在手機上也幾乎看不見。
+         線加粗到 2px，位移跟著改成間距的一半（2+7=9 → 4.5）。
+
+     二、點擊範圍只有 26×33，比 Apple 訂的 44×44 最小觸控目標還小。
+         用一個看不見的 ::after 把感應區撐開，外觀不動。 */
+  @media (hover: none) {
+    .burger { position: relative; }
+
+    .burger::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 44px;
+      height: 44px;
+      transform: translate(-50%, -50%);
+    }
+
+    .burger span { height: 2px; }
+    .is-menu .burger span:nth-child(1) { transform: translateY(4.5px) rotate(45deg); }
+    .is-menu .burger span:nth-child(3) { transform: translateY(-4.5px) rotate(-45deg); }
+  }
+
+  /* ── 頁首／頁尾：觸控上不靠混色 ─────────
+     iOS Safari 把 <video> 交給獨立的合成層，疊在上面的 mix-blend-difference
+     有時整個算不出來，頁首就會連著漢堡鈕一起不見。桌機沒有這個問題，
+     所以只在觸控裝置關掉混色，改成直接指定顏色——
+     深色章節維持白色，膠卷那章是米白底，翻成墨色。結果和 difference 一樣。 */
+  @media (hover: none) {
+    header.mix-blend-difference,
+    footer.mix-blend-difference { mix-blend-mode: normal; }
+
+    html.is-lightbg header.mix-blend-difference,
+    html.is-lightbg header.mix-blend-difference #brand,
+    html.is-lightbg header.mix-blend-difference #sceneLabel { color: var(--ink); }
+
+    html.is-lightbg .burger span { background: var(--ink); }
+    html.is-lightbg .lang button { color: rgba(20, 19, 15, .45); }
+    html.is-lightbg .lang button[aria-current="true"] { color: var(--ink); }
+    html.is-lightbg .lang i { color: rgba(20, 19, 15, .25); }
+    html.is-lightbg footer.mix-blend-difference { color: rgba(20, 19, 15, .5); }
+  }
+
   /* ── 顆粒質感 ───────────────────────── */
   .grain {
     position: fixed;
@@ -3084,6 +3130,8 @@
       current = name;
       if (name === 'hero') { setProgress(0); }
       root.classList.toggle('is-inner', name !== 'hero');
+      /* 米白底的章節：觸控版的頁首靠這個把字翻成墨色（見 .burger 附近的說明） */
+      root.classList.toggle('is-lightbg', name === 'teams');
       syncRest(name !== 'hero');
       syncChrome();
       watchScene(to);
@@ -4322,7 +4370,10 @@
         ? navTouch.top >= el.scrollHeight - el.clientHeight - 2
         : navTouch.top <= 2);
       if (!wasEdge) { return; }
-      if (current === 'teams' && !filmAtEdge(dir)) { return; }
+      /* 膠卷那一章，滾輪版要求先把片子看到底才放行（滾輪本來就在推片子）。
+         手指不一樣：直滑不會動到膠卷，橫滑才會 —— 沿用同一條規則的話，
+         就得先把十六張全部撥完才離得開這一章。直滑在觸控上意思很明確，
+         所以這裡不看膠卷停在第幾格。 */
       if (performance.now() < navLock) { return; }
       sceneStep(dir);
     }, { passive: true });
