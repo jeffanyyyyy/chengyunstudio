@@ -1672,6 +1672,15 @@
     html.is-lightbg footer.mix-blend-difference { color: rgba(20, 19, 15, .5); }
   }
 
+  /* 蜜罐：搬出畫面外而不是 display:none，機器人比較不會略過 */
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
   /* ── 顆粒質感 ───────────────────────── */
   /* inset 只要留得下位移就夠。原本是 -150%（寬高各 4 倍視窗 ＝ 16 倍螢幕面積）：
      390×844、DPR 3 的手機上那一層是 4700 萬個像素，還疊在所有東西之上、
@@ -2221,6 +2230,14 @@
               <label for="f-address" data-i18n="form.address">Address</label>
               <input id="f-address" name="address" type="text" autocomplete="street-address" />
             </div>
+          </div>
+
+          <!-- 蜜罐：畫面上看不到，鍵盤與朗讀軟體也碰不到，正常使用者不可能填。
+               機器人會把看得到的欄位全部填滿，填了就在後端擋下來。
+               用位移而不是 display:none —— 有些機器人會跳過 display:none 的欄位 -->
+          <div class="hp" aria-hidden="true">
+            <label for="f-nickname">Nickname</label>
+            <input id="f-nickname" name="nickname" type="text" tabindex="-1" autocomplete="off" />
           </div>
 
           <label class="consent" for="f-consent">
@@ -4765,10 +4782,18 @@
     });
 
     /* ══ 聯絡表單 ══════════════════════════════════════════════
-       這是純靜態頁面，沒有伺服器可以寫資料庫或寄信。
-       把端點填在下面這一行，表單就會把 JSON POST 過去；
-       留空時不會假裝送出，而是明白告知並提供改用 Email 的途徑。 */
-    const FORM_ENDPOINT = '';
+       送到 Vercel 上的 /api/contact（原始碼在 deploy/api/contact.js）。
+       那支函式把內容寫進 Supabase，同時寄一封通知信到公司信箱。
+
+       為什麼不從瀏覽器直接打 Supabase：前端只拿得到公開的 anon key，
+       擋不擋得住全看 RLS 政策寫得對不對；走後端的話 service_role key
+       留在伺服器上，資料表一條 policy 都不用開，誰都碰不到。
+
+       留空的話不會假裝送出，而是明白告知並提供改用 Email 的途徑。 */
+    const FORM_ENDPOINT = '/api/contact';
+
+    /* 六個必填欄位不可能兩秒半內填完。和蜜罐一起交給後端判斷 */
+    const formOpenedAt = performance.now();
 
     const form = document.getElementById('enquiry');
     const formMsg = document.getElementById('formMsg');
@@ -4848,6 +4873,7 @@
       data.consent = true;
       data.lang = lang;
       data.submittedAt = new Date().toISOString();
+      data.elapsed = Math.round(performance.now() - formOpenedAt);
 
       if (!FORM_ENDPOINT) {
         /* 端點還沒串：明說沒有送出，並給一條現在就能用的路 */
