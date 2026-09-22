@@ -635,11 +635,29 @@
     column-gap: clamp(1.2rem, 4vw, 2.8rem);
   }
 
+  /* 第二列往右錯開。用 margin 而不是 padding，
+     1fr 那一欄才會跟著縮，右緣不會被推出版心。 */
+  .nm-row-off { margin-left: clamp(1.4rem, 7vw, 5.5rem); }
+
   .nm-ch {
     font-size: calc(clamp(3.4rem, 12vw, 7rem) * var(--fs-display));
     font-weight: 300;
-    line-height: .88;
     letter-spacing: 0;
+    /* 遮罩：大字從下面升上來，超出的部分被這一層切掉。
+       line-height 改成 1，字才不會貼著遮罩邊緣；
+       上下再各留 .08em 的餘裕（用負 margin 抵銷），
+       中文字有些筆畫會微微超出 em 框，沒留就會被削到。 */
+    display: block;
+    overflow: hidden;
+    line-height: 1;
+    padding: .08em 0;
+    margin: -.08em 0;
+  }
+
+  .nm-ch > i,
+  .nm-tx > i {
+    display: block;
+    font-style: normal;
   }
 
   .nm-side {
@@ -662,6 +680,11 @@
     font-weight: 300;
     letter-spacing: .06em;
     line-height: 1.3;
+    /* 同樣是遮罩。下沿留 .14em 給 p、g 這類有下伸部的字母 */
+    display: block;
+    overflow: hidden;
+    padding-bottom: .14em;
+    margin-bottom: -.14em;
   }
 
   .scene-body {
@@ -987,6 +1010,10 @@
   .person-fields dt { margin-bottom: .45rem; }
   .person-fields dd { margin: 0 0 1.4rem; }
   .person-fields dd:last-child { margin-bottom: 0; }
+
+  /* 介紹與經歷併在同一格時，兩塊之間要比欄位之間更開一點，
+     否則最後一欄的內文和第一個經歷分類標題會黏在一起 */
+  .person-fields + .term { margin-top: 2.1rem; }
 
   /* 主持人經歷：分類標題 + 條列 */
   .person-list {
@@ -1900,17 +1927,17 @@
            釋義是翻譯的，「澄」「耘」本身是品牌字，三種語言都一樣 -->
       <h2 class="scene-title name-mark fx-skip">
         <span class="nm-row">
-          <span class="nm-ch">澄</span>
+          <span class="nm-ch"><i>澄</i></span>
           <span class="nm-side">
             <span class="nm-ro">Cheng</span>
-            <span class="nm-tx" data-i18n="about.m1">clarity, made transparent</span>
+            <span class="nm-tx"><i data-i18n="about.m1">clarity, made transparent</i></span>
           </span>
         </span>
-        <span class="nm-row">
-          <span class="nm-ch">耘</span>
+        <span class="nm-row nm-row-off">
+          <span class="nm-ch"><i>耘</i></span>
           <span class="nm-side">
             <span class="nm-ro">Yun</span>
-            <span class="nm-tx" data-i18n="about.m2">the ground worked, step by step</span>
+            <span class="nm-tx"><i data-i18n="about.m2">the ground worked, step by step</i></span>
           </span>
         </span>
       </h2>
@@ -2070,7 +2097,7 @@
             <div class="frame-shot" style="--a:#2a2a2a; --b:#0d0d0d; background-image: url(/assets/team/15.jpg); background-size: cover; background-position: center 45%"><span class="num">15</span><span class="frame-role" data-i18n="teams.s15">Performance act Brian Lin, magician</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#6b2a10; --b:#1c0c06; background-image: url(/assets/team/16.jpg); background-size: cover; background-position: center 50%"><span class="num">16</span><span class="frame-role" data-i18n="teams.s16">Performance act Fire dance</span></div>
+            <div class="frame-shot" style="--a:#6b2a10; --b:#1c0c06; background-image: url(/assets/team/16.jpg); background-size: cover; background-position: center 50%"><span class="num">16</span><span class="frame-role" data-i18n="teams.s16">Performance act Chihuowu, fire dance</span></div>
           </article>
         </div>
       </div>
@@ -2349,6 +2376,31 @@
        事實性內容（日期、費用、規範）三語一致，只換語言不換條件。 */
     const I18N = {
       en: {
+        'teams.i10.bg': 'Over ten years on stage and in commercial work; Taiwan magic champion, 2019. Licensed as a street performer in Taipei, New Taipei, Taoyuan, Miaoli, Taichung and Yilan.',
+        'teams.i10.post': 'Teaches magic clubs at schools and universities, and lectures on career and campus programmes.',
+        'teams.i10.look': 'Sharp and funny on stage, and good at folding magic into teaching and into the room itself — a name corporate banquets, launches and department stores ask for.',
+        'teams.i10.acts': 'Championship magic: stage magic with driving music and quick timing, well clear of the old tailcoat idiom, plus close-up work. | Bubble show: giant bubbles with haze, interactive, good for families. | Balloon art: Japanese street-performance style with a current edge, from handed-out pieces to giant mascots such as dragon-lion dancers and phoenixes, made to order. | Sichuan face-changing: the real thing, seamless, with opera, kung fu and close-up interaction.',
+        'teams.i10.ptypes': 'Corporate year-end and spring banquets, product launches, press conferences, department-store residencies, private parties, campus talks and career lectures.',
+        'teams.w10.g1': 'Awards and flagship appearances',
+        'teams.w10.l1': '2019 Hsin Tung Yang Magic Festival — first place | National Day float theme-park show | International Wheelchair Tennis Open | Guest performer, National Magic Convention | Guest performer, Taoyuan street-performer accreditation | Taoyuan County good-citizen awards',
+        'teams.w10.g2': 'Corporate banquets, launches and press conferences',
+        'teams.w10.l2': 'BMW new-model launch | Namewee Qiyi App launch press conference | Taipei City food-safety week press conference | Dinglu Insurance awards | Cathay Century year-end party | Ultrasonic Co. year-end party | MSHG year-end gathering | Lasova nationwide lecture tour | Taipei Arena toy fair',
+        'teams.w10.g3': 'Department stores and residencies',
+        'teams.w10.l3': 'Mitsui Outlet Park Linkou and Courtyard by Marriott residencies | Long-standing work with Tai Mall, Honhui Plaza, Shin Kong Mitsukoshi, Far Eastern and SOGO',
+        'teams.w10.g4': 'Television and advertising',
+        'teams.w10.l4': 'Eastern Television appearances | Zhongli New Year countdown | Taoyuan volunteer awards | Commercials: banking, event promotion, a Keigo Higashino book launch, the Namewee Qiyi App',
+        'teams.w11a.g1': 'About the group',
+        'teams.w11a.l1': 'One of Taiwan\u2019s defining extreme fire and visual performance troupes. | Traditional martial arts, acrobatics and body movement meet open flame; fluid handling and spin draw burning lines through the dark. | Force and beauty, held together.',
+        'teams.w11a.g2': 'Signature act',
+        'teams.w11a.l2': 'Their signature is the fire meteor. | It draws on the meteor hammer of Chinese acrobatics and on the nine-section whip and rope dart of martial arts. | Under fast spin and release it opens into a taut burst of sparks.',
+        'teams.w11a.g3': 'Style',
+        'teams.w11a.l3': 'Wild, powerful, and composed. | Sweeping or strange and distant depending on what the event needs — either way the room turns to watch.',
+        'teams.w11a.g4': 'Best suited to',
+        'teams.w11a.l4': 'Large outdoor events | Corporate year-end and spring banquets | New Year countdowns | Brand launches | Opening ceremonies | Festivals and seasonal parties',
+        'teams.w11b.g1': 'Large commercial and seasonal events',
+        'teams.w11b.l1': 'Miramar Entertainment Park seasonal events, themed fireworks and fire shows, among them the American Month feature.',
+        'teams.w11b.g2': 'Festivals and touring',
+        'teams.w11b.l2': 'Active across international arts festivals, outdoor cultural programmes, large commercial campaigns and cross-genre New Year shows, known in the trade for extreme fire work and the fire meteor.',
         /* 字標的釋義。英文其餘內容走版面預設值，但這兩句一定要在字典裡，
            否則從別的語言切回英文時，applyLang 查不到值就不覆寫，
            畫面會卡在上一個語言 */
@@ -2425,7 +2477,8 @@
         'teams.b6': 'Year-end banquets · spring parties · ribbon-cuttings and openings',
         'teams.b7': 'Twelve-plus years hosting · born in the US · TOEIC 930',
         'teams.b8': 'International forums · tech summits · launches',
-        'teams.f.stage': 'Performance background', 'teams.f.talent': 'Languages & talents',
+        'teams.f.stage': 'Performance background',
+        'teams.f.acts': 'Signature acts', 'teams.f.talent': 'Languages & talents',
         'teams.i3.look': 'Sweet-natured and gentle; easy to be around.',
         'teams.i3.stage': 'Over twenty years performing, with a deep bench of large commercial events behind her, including a residency at a live-music restaurant in Sydney.',
         'teams.i3.talent': 'A singer at heart \u2014 performs in Mandarin, Taiwanese, English and Japanese.',
@@ -2496,6 +2549,31 @@
         'detail.body': '<p class="scene-body">A curated market built on one rule: silence. No loudspeakers, no PA, no microphones — hand-held signs, boards and purpose-built props carry the exchange instead, so attention stays on the work and the person who made it.</p><dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-7 mt-10"><div><dt class="term">Schedule</dt><dd class="desc">6 sessions on alternate weekends: 3–4 Oct, 17–18 Oct, 31 Oct–1 Nov, 14–15 Nov, 28–29 Nov, 12–13 Dec.</dd></div><div><dt class="term">Place &amp; hours</dt><dd class="desc">Shuangshi Plaza, Banqiao, New Taipei (next to Jiangzicui MRT).<br />Market 15:00–20:30, check-in 14:00–15:00.</dd></div><div><dt class="term">Site setup</dt><dd class="desc">Tent (3 x 1.5 m, shared by two stalls), table 120 x 60 cm, chair, custom brand sign and string lights. Brands bring nothing.</dd></div><div><dt class="term">Interaction</dt><dd class="desc">Silent props including the "let me haggle" sign and a 15-second lot-drawing intro. Join three sessions and receive a custom brand puzzle, redeemable against future stall fees.</dd></div></dl>'
       },
       zh: {
+        'teams.i10.bg': '10 年以上舞台與商業演出經驗，2019 年獲台灣魔術冠軍。持有臺北市、新北市、桃園市、苗栗縣、臺中市、宜蘭縣等多所縣市的街頭藝人證。',
+        'teams.i10.post': '多所中小學與大學魔術社指導老師，以及專題講座講師。',
+        'teams.i10.look': '風格帥氣幽默，擅長把魔術融進課程與人際互動；是各大企業尾牙、發表會與百貨商場都喜歡的明星級魔術師。',
+        'teams.i10.acts': '冠軍魔術秀：跳脫傳統燕尾服框架，結合動感音樂與快節奏的舞台魔術，以及近距離互動魔術。｜魔幻泡泡秀：巨型泡泡結合煙霧效果，可互動、適合親子同樂。｜歡樂造型氣球：融合日本街頭表演風格與流行元素，從精緻派送到巨型吉祥物（舞龍舞獅、鳳凰）都能客製。｜中國川劇變臉：正宗零破綻的川劇變臉，結合戲曲、功夫與近距離互動。',
+        'teams.i10.ptypes': '企業尾牙春酒、產品發表會、記者會、百貨商場駐場、私人派對、校園演講與職涯講座。',
+        'teams.w10.g1': '大賽榮譽與代表性活動',
+        'teams.w10.l1': '2019 新東陽魔術節 — 魔術比賽冠軍 | 國慶花車主題樂園演出 | 國際輪椅網球公開賽演出 | 全國魔術大會師表演嘉賓 | 桃園市街頭藝人驗證表演嘉賓 | 桃園縣好人好事代表頒獎典禮',
+        'teams.w10.g2': '企業尾牙、發表會與記者會',
+        'teams.w10.l2': 'BMW 新車發表會 | 黃明志《起藝 APP》啟用記者會 | 台北市政府食安週記者會 | 錠律保險頒獎典禮 | 國泰產險尾牙 | 超音波股份有限公司尾牙 | 敏盛醫療體系歲末聯歡 | Lasova 全台巡迴講座 | 巨蛋玩具展展演',
+        'teams.w10.g3': '百貨商場與長期駐場',
+        'teams.w10.l3': '林口三井 OUTLET、萬怡飯店駐場演出 | 長期合作：台茂購物中心、宏匯廣場、新光三越、遠東百貨、SOGO 百貨',
+        'teams.w10.g4': '電視媒體與廣告',
+        'teams.w10.l4': '東森電視台合作演出 | 中壢市跨年晚會 | 桃園市志工表揚大會 | 廣告拍攝：銀行廣告、活動宣傳廣告、日本作家東野圭吾新書宣傳廣告、黃明志《起藝 APP》宣傳廣告',
+        'teams.w11a.g1': '團體特色',
+        'teams.w11a.l1': '台灣極具代表性的專業極限火舞與視覺藝術表演團體。| 表演者把傳統武術、雜技、肢體舞蹈與火焰結合，靠精湛流暢的操偶與揮舞技巧，在黑暗中交織出震撼的烈焰軌跡。| 兼具力與美的頂級視覺饗宴。',
+        'teams.w11a.g2': '獨創招牌特技',
+        'teams.w11a.l2': '招牌特技是「火流星」。| 融合中國傳統雜技的流星槌，以及武術中的九節鞭、繩鏢等元素。| 在舞者急速旋轉與拋接之下，綻放出極具張力的火花視覺。',
+        'teams.w11a.g3': '表演風格',
+        'teams.w11a.l3': '充滿野性、力量與美學。| 能依活動性質展現磅礡氣勢或神祕的異國風情，瞬間炒熱現場並抓住全場目光。',
+        'teams.w11a.g4': '擅長演出類型',
+        'teams.w11a.l4': '大型戶外活動 | 企業尾牙春酒 | 跨年晚會 | 品牌發表會 | 開幕剪綵 | 節慶派對與藝術節演出',
+        'teams.w11b.g1': '大型商業與節慶活動',
+        'teams.w11b.l1': '美麗華百樂園大型節慶活動、主題煙火與火舞秀演出（如「歡慶美國月」特技火舞演出）。',
+        'teams.w11b.g2': '國內外藝術節與極限巡演',
+        'teams.w11b.l2': '活躍於各大國際藝術節、戶外文化展演、大型商業造勢與跨界跨年晚會，以極限火舞與獨創火流星技藝享譽業界。',
         'hero.top': '瀏覽所有章節', 'hero.hold': '長按或捲動進入',
         'label.intro': '— 進場', 'hint.intro': '捲動推進影片 · Esc 返回',
         'intro.hint': '捲動繼續', 'intro.skip': '跳過 →',
@@ -2601,7 +2679,7 @@
         'teams.s13': '舞團 Funky Girls',
         'teams.s14': '舞團 曼加非洲戰鼓團',
         'teams.s15': '表演團 魔術師 林桓宇 Brian',
-        'teams.s16': '表演團 火舞',
+        'teams.s16': '表演團 熾火舞',
         'teams.todo': '資料待提供：姓名、介紹與過往經歷都還沒拿到。',
         'teams.i6.inst': '小提琴（Violin）／中提琴（Viola）。',
         'teams.i6.edu': '畢業於國立臺北教育大學音樂研究所、國立臺北教育大學音樂系及國立臺南女子高級中學。',
@@ -2641,7 +2719,8 @@
         'teams.s6': '主持人 Nina 妮娜 ｜ 個人經歷', 'teams.b6': '尾牙晚宴 · 春酒 · 剪綵與開幕典禮',
         'teams.s7': '主持人 Jessica 菜菜 ｜ 個人介紹', 'teams.b7': '12 年以上主持經驗 · 美國出生 · 多益 930',
         'teams.s8': '主持人 Jessica 菜菜 ｜ 個人經歷', 'teams.b8': '國際論壇 · 科技大會 · 商業發表會',
-        'teams.f.stage': '表演資歷', 'teams.f.talent': '語言與才藝',
+        'teams.f.stage': '表演資歷',
+        'teams.f.acts': '擅長演出項目', 'teams.f.talent': '語言與才藝',
         'teams.i3.look': '氣質甜美、溫柔親切。',
         'teams.i3.stage': '擁有 20 年以上的表演資歷，具備豐富的大型商業活動表演經驗，曾於澳洲雪梨的駐唱餐廳演出。',
         'teams.i3.talent': '熱愛唱歌，精通國語、台語、英文及日文歌曲演唱。',
@@ -2709,6 +2788,31 @@
         'detail.body': '<p class="scene-body">以「沉浸式無聲風格聚落」為核心的策展型市集。現場不使用擴音器、喇叭與麥克風，改以手拿牌、看板與大會設計的互動道具溝通，把注意力留給桌上的作品與創作者本人。</p><dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-7 mt-10"><div><dt class="term">檔期</dt><dd class="desc">全期 6 場（隔週六日）：10/03–10/04、10/17–10/18、10/31–11/01、11/14–11/15、11/28–11/29、12/12–12/13</dd></div><div><dt class="term">地點與時間</dt><dd class="desc">新北市板橋區雙十廣場（捷運江子翠站旁）<br />擺攤 15:00 – 20:30，報到 14:00 – 15:00</dd></div><div><dt class="term">場域配置</dt><dd class="desc">阿里山帳（兩攤共用一帳，3x1.5m）、桌 120x60cm、靠背椅、客製品牌招牌與氣氛燈串，品牌不需自備硬體。</dd></div><div><dt class="term">互動機制</dt><dd class="desc">「老闆我要殺價」手舉牌、「籤筒 15 秒介紹」等無聲道具；參展滿 3 場贈客製品牌拼圖，可折抵未來檔期攤租。</dd></div></dl>'
       },
       ja: {
+        'teams.i10.bg': '舞台と商業公演で 10 年以上。2019 年に台湾マジック大会で優勝。台北市・新北市・桃園市・苗栗県・台中市・宜蘭県などでストリートアーティスト認定を取得。',
+        'teams.i10.post': '小中学校・大学のマジック部の指導、および講演会の講師。',
+        'teams.i10.look': '軽やかでユーモアのある芸風。マジックを授業や場の空気づくりに自然に織り込みます。企業の忘年会・発表会・百貨店から指名の多いマジシャン。',
+        'teams.i10.acts': 'チャンピオン・マジック：燕尾服の型を離れ、テンポのよい音楽と速い展開のステージマジック、そしてクロースアップ。｜バブルショー：巨大なシャボン玉とスモークの演出。参加型で親子向け。｜バルーンアート：日本のストリート流に今どきの要素を重ね、手渡しの小品から龍舞・獅子舞・鳳凰などの大型マスコットまで。｜川劇変面：正統の変面に、戯曲・カンフー・間近でのやりとりを重ねて。',
+        'teams.i10.ptypes': '企業の忘年会・新年会、製品発表会、記者会見、百貨店常設、プライベートパーティー、学校講演とキャリア講座。',
+        'teams.w10.g1': '受賞と代表的な出演',
+        'teams.w10.l1': '2019 新東陽マジックフェスティバル 優勝 | 建国記念フロート・テーマパーク公演 | 国際車いすテニスオープン | 全国マジック大会 ゲスト | 桃園市ストリートアーティスト認定審査 ゲスト | 桃園県 善行表彰式',
+        'teams.w10.g2': '企業忘年会・発表会・記者会見',
+        'teams.w10.l2': 'BMW 新車発表会 | Namewee『起藝 APP』公開記者会見 | 台北市食品安全週間 記者会見 | 錠律保険 表彰式 | 国泰産険 忘年会 | 超音波股份有限公司 忘年会 | 敏盛医療グループ 年末懇親会 | Lasova 全国講演ツアー | 台北アリーナ トイフェア',
+        'teams.w10.g3': '百貨店・常設公演',
+        'teams.w10.l3': '三井アウトレットパーク林口、コートヤード・バイ・マリオットで常設公演 | 台茂ショッピングセンター、宏匯広場、新光三越、遠東百貨、SOGO と継続的に協業',
+        'teams.w10.g4': 'テレビ・広告',
+        'teams.w10.l4': '東森テレビ出演 | 中壢カウントダウンイベント | 桃園市ボランティア表彰大会 | 広告出演：銀行広告、イベント告知、東野圭吾の新刊プロモーション、Namewee『起藝 APP』',
+        'teams.w11a.g1': '団体紹介',
+        'teams.w11a.l1': '台湾を代表するエクストリーム・ファイアダンスとビジュアル表現の専門チーム。| 伝統武術、雑技、身体表現と炎を組み合わせ、滑らかな操りと振りで、暗闇に炎の軌跡を描きます。| 力と美の両方が立つ舞台。',
+        'teams.w11a.g2': '看板の技',
+        'teams.w11a.l2': '看板は「火流星」。| 中国雑技の流星槌に、武術の九節鞭や縄鏢の要素を重ねた技。| 高速の回転と放りの中で、張りつめた火花が開きます。',
+        'teams.w11a.g3': '作風',
+        'teams.w11a.l3': '野性と力、そして美意識。| イベントの性格に応じて、壮大にも、異国的で謎めいた方向にも振れます。いずれにせよ場の視線を一気に集めます。',
+        'teams.w11a.g4': '得意な演目',
+        'teams.w11a.l4': '大型屋外イベント | 企業の忘年会・新年会 | カウントダウン | ブランド発表会 | オープニングセレモニー | 季節のパーティーと芸術祭',
+        'teams.w11b.g1': '大型商業・季節イベント',
+        'teams.w11b.l1': '美麗華百楽園の大型季節イベント、テーマ花火とファイアショー（「アメリカ月間」の特技ファイアダンスなど）。',
+        'teams.w11b.g2': '芸術祭と巡演',
+        'teams.w11b.l2': '国際芸術祭、屋外の文化公演、大型の商業キャンペーン、ジャンルを越えたカウントダウンなどで活動。エクストリームな火舞と独自の火流星で知られています。',
         'hero.top': 'すべての章を見る', 'hero.hold': '長押し／スクロール',
         'label.intro': '— 入場', 'hint.intro': 'スクロールで進む · Esc で戻る',
         'intro.hint': 'スクロールで進む', 'intro.skip': 'スキップ →',
@@ -2814,7 +2918,7 @@
         'teams.s13': 'ダンスチーム Funky Girls',
         'teams.s14': 'ダンスチーム 曼加アフリカ戦鼓団',
         'teams.s15': 'パフォーマー マジシャン 林桓宇 Brian',
-        'teams.s16': 'パフォーマー ファイアダンス',
+        'teams.s16': 'パフォーマー 熾火舞 ファイアダンス',
         'teams.todo': '氏名・プロフィール・実績は後日追加します。',
         'teams.i6.inst': 'ヴァイオリン（Violin）／ヴィオラ（Viola）。',
         'teams.i6.edu': '国立台北教育大学 音楽研究科修了、同大学 音楽学科卒業、国立台南女子高級中学卒業。',
@@ -2854,7 +2958,8 @@
         'teams.s6': '司会 Nina ｜ 実績', 'teams.b6': '忘年会 · 新年会 · テープカットと開店式',
         'teams.s7': '司会 Jessica ｜ プロフィール', 'teams.b7': '12年以上の司会経験 · 米国生まれ · TOEIC 930',
         'teams.s8': '司会 Jessica ｜ 実績', 'teams.b8': '国際フォーラム · テック系カンファレンス · 発表会',
-        'teams.f.stage': '出演歴', 'teams.f.talent': '語学と特技',
+        'teams.f.stage': '出演歴',
+        'teams.f.acts': '得意な演目', 'teams.f.talent': '語学と特技',
         'teams.i3.look': '甘さのある雰囲気と、やわらかな親しみやすさ。',
         'teams.i3.stage': '20年以上の出演歴。大型商業イベントでの出演経験が豊富で、オーストラリア・シドニーのライブレストランで歌っていた時期も。',
         'teams.i3.talent': '歌うことが好きで、中国語・台湾語・英語・日本語の歌をこなします。',
@@ -3184,9 +3289,32 @@
          這裡的字都包在子元素裡，拆不到 */
       const mark = scene.querySelector('.name-mark');
       if (mark) {
-        gsap.fromTo(mark.querySelectorAll('.nm-ch, .nm-ro, .nm-tx'),
-          { opacity: 0, yPercent: 38 },
-          { opacity: 1, yPercent: 0, duration: .66, ease: 'power3.out', stagger: .075 });
+        const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+        mark.querySelectorAll('.nm-row').forEach((row, i) => {
+          /* 兩列錯開進場，和版面上的錯位呼應 */
+          const at = i * .17;
+
+          tl.fromTo(row.querySelector('.nm-ch > i'),
+            { yPercent: 116 }, { yPercent: 0, duration: 1.15 }, at);
+
+          tl.fromTo(row.querySelector('.nm-side'),
+            { opacity: 0 }, { opacity: 1, duration: .85, ease: 'power2.out' }, at + .2);
+
+          /* 拼音的字距從緊拉開到定位。CSS 寫的是 em，GSAP 補不了單位，
+             所以先把算好的 px 讀出來，再從它的三成拉回去；
+             收尾 clearProps 交還給 CSS，換螢幕寬度時才跟得上。 */
+          const ro = row.querySelector('.nm-ro');
+          const ls = parseFloat(getComputedStyle(ro).letterSpacing) || 0;
+          if (ls) {
+            tl.fromTo(ro,
+              { letterSpacing: (ls * .28).toFixed(2) + 'px' },
+              { letterSpacing: ls.toFixed(2) + 'px', duration: 1.4, clearProps: 'letterSpacing' },
+              at + .2);
+          }
+
+          tl.fromTo(row.querySelector('.nm-tx > i'),
+            { yPercent: 112 }, { yPercent: 0, duration: 1.05 }, at + .26);
+        });
       }
 
       const lines = scene.querySelector('.fx-lines');
@@ -3734,7 +3862,7 @@
     function fillIntro(box, who, quiet) {
       const dl = document.createElement('dl');
       dl.className = 'person-fields';
-      ['inst', 'bg', 'edu', 'post', 'look', 'stage', 'talent',
+      ['inst', 'bg', 'edu', 'post', 'look', 'stage', 'talent', 'acts',
        'play', 'music', 'style', 'lang', 'point', 'types', 'ptypes'].forEach((f) => {
         const v = t('teams.i' + who + '.' + f);
         if (!v) { return; }                       /* 這位沒有這一欄就跳過 */
@@ -3743,7 +3871,13 @@
         dt.textContent = t('teams.f.' + f);
         const dd = document.createElement('dd');
         dd.className = 'desc';
-        dd.textContent = v;
+        /* 有些欄位本身就是並列的好幾項（魔術師的擅長演出項目是四套節目）。
+           用直線分隔，這裡一項一行——全部擠成一段的話會糊成一片讀不出來。
+           不用 innerHTML：文案裡有引號、括號也不會壞掉 */
+        v.split(/\s*[|｜]\s*/).filter(Boolean).forEach((part, i) => {
+          if (i) { dd.appendChild(document.createElement('br')); }
+          dd.appendChild(document.createTextNode(part));
+        });
         dl.append(dt, dd);
       });
       if (!dl.childElementCount) {
@@ -4135,8 +4269,8 @@
       { kind: 'both', who: 7 },                    /* 樂團 黎謙 */
       { kind: 'worksOnly', who: ['8a', '8b'] },    /* 舞團 Funky Girls */
       { kind: 'worksOnly', who: ['9a', '9b'] },    /* 舞團 曼加非洲戰鼓團 */
-      { kind: 'intro', who: 10 },                  /* 表演團 魔術師 —— 文案待提供 */
-      { kind: 'intro', who: 11 }                   /* 表演團 火舞 —— 文案待提供 */
+      { kind: 'both', who: 10 },                     /* 表演團 魔術師 林桓宇 Brian */
+      { kind: 'worksOnly', who: ['11a', '11b'] }     /* 表演團 熾火舞 —— 六組，超過單一 who 的四組上限 */
     ];
 
     /* 經歷條列裡的主持語言註記。名稱本身是專有名詞、三語共用，
