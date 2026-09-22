@@ -1252,7 +1252,7 @@
      於是整排把右邊那顆箭頭擠出畫面（實測 320/360/390 都溢位）。
      而且 5px 的點在觸控上本來就按不準，16 個點各給 44px 更是不可能。
      所以窄螢幕收起圓點，改以箭頭為主要操作——箭頭有 50px，按得到；
-     位置由上方的 01 / 16 計數器交代，左右滑動也照常可用。 */
+     位置由上方的 01 / 18 計數器交代，左右滑動也照常可用。 */
   @media (max-width: 559px) {
     .film-dots { display: none; }
     .film-controls { justify-content: center; gap: clamp(2rem, 18vw, 5rem); }
@@ -1951,7 +1951,7 @@
       </div>
 
       <!-- 邊欄計數器：角標壓在黑色底片上等於隱形，改用數字標示目前是第幾位 -->
-      <p class="film-count" aria-hidden="true"><b id="filmCount">01</b><i>/ 16</i></p>
+      <p class="film-count" aria-hidden="true"><b id="filmCount">01</b><i>/ 18</i></p>
 
       <div class="film-stage">
       <!-- 中央聚光：畫在 3D 場景外，免得和正中央那一格同深度互穿 -->
@@ -2007,6 +2007,12 @@
           </article>
           <article class="frame">
             <div class="frame-shot" style="--a:#2b4e8c; --b:#0c1729; background-image: url(/assets/team/16.jpg); background-size: cover; background-position: center 50%"><span class="num">16</span><span class="frame-role" data-i18n="teams.s16">Dance troupe Funky Girls | Highlights</span></div>
+          </article>
+          <article class="frame">
+            <div class="frame-shot" style="--a:#5a3a18; --b:#1a1008; background-image: url(/assets/team/17.jpg); background-size: cover; background-position: center 6%"><span class="num">17</span><span class="frame-role" data-i18n="teams.s17">Drum troupe Manga African War Drums | About the group</span></div>
+          </article>
+          <article class="frame">
+            <div class="frame-shot" style="--a:#3d5a2a; --b:#101a0b; background-image: url(/assets/team/18.jpg); background-size: cover; background-position: center 50%"><span class="num">18</span><span class="frame-role" data-i18n="teams.s18">Drum troupe Manga African War Drums | Highlights</span></div>
           </article>
         </div>
       </div>
@@ -2314,6 +2320,8 @@
         'teams.b14': 'Concerts \u00b7 hotel residencies \u00b7 commercial gigs',
         'teams.b15': 'Cheer dance \u00b7 commercial stage sets',
         'teams.b16': 'Corporate year-end banquets \u00b7 pro sports venues \u00b7 outdoor carnivals',
+        'teams.b17': 'African war drums \u00b7 dance \u00b7 voice',
+        'teams.b18': 'International invitationals \u00b7 street-artist licence \u00b7 long residencies',
         'teams.todo': 'Still to be supplied: name, profile and event history.',
         'teams.i6.inst': 'Violin / viola.',
         'teams.i6.edu': 'MA and BA in music, National Taipei University of Education; Tainan Girls\u2019 Senior High School.',
@@ -2334,6 +2342,10 @@
         'teams.w8a.l3': 'Year-end and spring banquet openings | Brand launches | Weddings and banquets | Commercial event support | Cheer-squad dance sets | Large parties and seasonal events',
         'teams.w8b.g1': 'Highlights',
         'teams.w8b.l1': 'Opening and mid-programme dance sets at corporate year-end banquets and large commercial dinners, including events for groups such as Yida. | Professional baseball and basketball venues, commercial showcases and outdoor carnivals.',
+        'teams.w9a.g1': 'About the group',
+        'teams.w9a.l1': 'Manga African War Drums bring the open sweep of the African savannah into a room through thunderous drums, warm music and dance that never sits still. | The players hold nothing back: hands on the skin, rhythm in the body, the two inseparable. | Strong, shifting patterns and a bright, carrying drum sound put the audience on the plains, moving with the animal kingdom, in the wildness and life of African music. | The troupe is well known at home, with lead percussionists, hand drums, dancers and native African vocalists. | The members bring more than music — among them a celebrated hunter, a vocalist from a family of shamans, and a modern African pop producer. | That mix is what has earned them a name across Africa and beyond.',
+        'teams.w9b.g1': 'Highlights',
+        'teams.w9b.l1': '2010 Paris international invitational for indigenous cultural heritage. | Widely awarded across the Gambia, from villages to the capital and on into other African countries. | Several members licensed as street performers by the Taipei Department of Cultural Affairs in May 2015 (some thirty troupes selected from 380). | Currently in long residency in Macau and the United States; some members signed a year with Lihpao Resort, Taichung in 2015, and performed five years at E-DA, Kaohsiung. | Selected as a demonstration troupe for the New Taipei City drum arts festival, 2020. | Selected as a demonstration troupe for the African Culture Hall, New Taipei City, 2020.',
         'teams.w6.l1': 'Maserati 臺灣區展示活動開幕樂手（2025）| 羅大佑《春龍交響夜》成都、北京、澳門場演唱會樂手（2024）| 張清芳《TimeLESS》上海場演唱會樂手（2024）| 台北流行音樂中心「文化館生日慶音樂會」表演嘉賓（2023）',
         'teams.w6.l2': '音樂節目《樂來樂快樂》錄製（2022）| 歐客佬咖啡豆廣告錄製（2022）| 《傳說對決》夏季冠軍賽開場演出樂手（2022）| 動畫短片《貓年海岸》音樂錄製（2021）| 玩弦四度爵士樂團：府城流水席、青春正好音樂祭、國家歌劇院「爵士好時光」、宜蘭傳藝「大聲音樂節」、基隆仲夏樂集、國家兩廳院「古典 born 爵士」、東海岸大地藝術節（2020）',
         'teams.w6.l3': '蕭敬騰《娛樂先生》演唱會樂手（2019）| 吳宗憲 Jacky Wu 演唱會樂手（2019）| 張信哲單曲〈說〉弦樂錄製（2017）| 《semifusa》同名專輯發行，入圍第 27 屆金曲獎「演奏類最佳專輯獎」、「最佳專輯製作人獎」、「最佳演奏錄音專輯獎」三項大獎（2016）| 林志炫《one take》演唱會樂手（2016）| 張克帆《兩個世界》演唱會樂手（2016）| 金點設計獎頒獎典禮開場演出樂手（2015）| 第 26 屆金曲獎主題曲錄製（2015）| WAO 女人音樂節演唱會樂手（2014）| 庾澄慶《我的哈林年代》演唱會樂手（2014）| 金馬獎頒獎典禮 — 張學友〈用餘生去愛〉典禮樂手（2014）| KKBOX 頒獎典禮 — 張學友典禮樂手（2014）| 公視《那些年，我們的歌》節目樂手（2014）',
@@ -2536,6 +2548,8 @@
         'teams.s14': '歌手 黎謙 LC ｜ 個人經歷', 'teams.b14': '演唱會 · 飯店駐唱 · 商演',
         'teams.s15': '舞團 Funky Girls ｜ 團體介紹', 'teams.b15': '啦啦隊熱舞 · 商演舞蹈',
         'teams.s16': '舞團 Funky Girls ｜ 特殊經歷', 'teams.b16': '企業尾牙 · 職業球場 · 戶外嘉年華',
+        'teams.s17': '鼓團 曼加非洲戰鼓團 ｜ 團體介紹', 'teams.b17': '非洲戰鼓 · 舞蹈 · 歌手',
+        'teams.s18': '鼓團 曼加非洲戰鼓團 ｜ 特殊經歷', 'teams.b18': '國際邀請賽 · 街頭藝人 · 長駐演出',
         'teams.todo': '資料待提供：姓名、介紹與過往經歷都還沒拿到。',
         'teams.i6.inst': '小提琴（Violin）／中提琴（Viola）。',
         'teams.i6.edu': '畢業於國立臺北教育大學音樂研究所、國立臺北教育大學音樂系及國立臺南女子高級中學。',
@@ -2556,6 +2570,10 @@
         'teams.w8a.g3': '擅長演出類型',
         'teams.w8a.l3': '企業尾牙春酒開場 | 品牌發表會 | 婚禮宴會 | 商業活動助陣 | 啦啦隊熱舞 | 大型派對與節慶活動',
         'teams.w8b.l1': '各大企業年度尾牙餐會、大型商業晚宴的開場與中場熱舞表演（如依田集團等大型企業活動）。| 職棒、職籃球場及各大商業展演、戶外嘉年華活動。',
+        'teams.w9a.g1': '團體介紹',
+        'teams.w9a.l1': '曼加非洲戰鼓團以震撼的戰鼓、熱情的音樂和充滿活力的舞蹈，生動呈現非洲草原的奔放壯闊，為觀眾打開通往非洲世界的一扇窗。| 透過熱力四射的非洲戰鼓，表演者們勇於展現自我，一邊用手敲打、一邊舞出節奏，兩者完美結合。| 強烈多變的節奏與嘹亮震撼的鼓聲，讓參與者彷彿置身非洲大草原，跟隨動物王國的腳步起舞跳躍，感受非洲音樂的野性與生命力。| 曼加非洲戰鼓團是非洲當地極具盛名的表演團體，團員有高音打擊樂手、手鼓、舞者以及道地的非洲歌手。| 團員背景豐富多樣，不僅精通音樂，還擁有其他令人稱奇的技能——隊中有國內厲害的狩獵高手、來自巫師家庭的通靈歌手，還有時髦的非洲流行音樂製作人。| 這樣獨特而多元的組合，使他們在音樂表演領域中享譽非洲及國際音樂圈。',
+        'teams.w9b.g1': '特殊經歷',
+        'teams.w9b.l1': '2010 巴黎國際原住民文化傳承邀請賽。| 於甘比亞國內從部落到首都到其他非洲國家得獎無數。| 部分團員於 2015 年 5 月獲得台北市政府文化局核准街頭藝人（380 團只錄取 30 幾團）。| 目前長駐澳門與美國，部分團員於 2015 年與台中麗寶樂園簽約演出一年，並曾於高雄義大演出 5 年。| 2020 獲選新北市政府鼓藝節鼓藝示範團隊。| 2020 獲選新北市國父紀念非洲文化館示範團隊。',
         'teams.s9': '主持人 TongTong 彤彤 ｜ 個人介紹', 'teams.b9': '7 年以上主持經驗 · 飛藝舞團團長',
         'teams.s10': '主持人 TongTong 彤彤 ｜ 個人經歷', 'teams.b10': '尾牙春酒 · 記者會 · 家庭日與親子活動',
         'teams.i5.bg': '擁有超過 7 年的專業主持經驗，個性活潑開朗、親和力十足，同時也是「飛藝舞團」的團長。',
@@ -2745,6 +2763,8 @@
         'teams.s14': 'シンガー 黎謙 LC ｜ 実績', 'teams.b14': 'コンサート · ホテル常演 · 商業公演',
         'teams.s15': 'ダンスチーム Funky Girls ｜ 団体紹介', 'teams.b15': 'チアダンス · 商業公演',
         'teams.s16': 'ダンスチーム Funky Girls ｜ 特記事項', 'teams.b16': '企業忘年会 · プロスポーツ会場 · 屋外カーニバル',
+        'teams.s17': 'ドラムチーム 曼加アフリカ戦鼓団 ｜ 団体紹介', 'teams.b17': 'アフリカ戦鼓 · ダンス · ヴォーカル',
+        'teams.s18': 'ドラムチーム 曼加アフリカ戦鼓団 ｜ 特記事項', 'teams.b18': '国際招待大会 · ストリートアーティスト認定 · 長期常演',
         'teams.todo': '氏名・プロフィール・実績は後日追加します。',
         'teams.i6.inst': 'ヴァイオリン（Violin）／ヴィオラ（Viola）。',
         'teams.i6.edu': '国立台北教育大学 音楽研究科修了、同大学 音楽学科卒業、国立台南女子高級中学卒業。',
@@ -2765,6 +2785,10 @@
         'teams.w8a.l3': '企業の忘年会・新年会のオープニング | ブランド発表会 | 結婚披露宴 | 商業イベントの応援 | チアダンス | 大型パーティーと季節イベント',
         'teams.w8b.g1': '特記事項',
         'teams.w8b.l1': '企業の年度忘年会や大型商業ディナーでのオープニング・中盤のダンスステージ（依田グループなどの大型企業イベント）。| プロ野球・プロバスケットボールの会場、各種商業展示、屋外カーニバル。',
+        'teams.w9a.g1': '団体紹介',
+        'teams.w9a.l1': '曼加アフリカ戦鼓団は、轟く太鼓と熱い音楽、躍動する踊りで、アフリカの草原の広がりを会場に持ち込みます。| 手で打ち、身体で刻む——奏者はためらわずに自分を出し、打つことと踊ることが一体になります。| 強く移ろう拍と、よく通る太鼓の響き。聴く人は草原に立ち、動物たちの歩みに合わせて跳ね、アフリカ音楽の野生と生命力に触れます。| 現地でも名の知られた団体で、高音打楽器、ハンドドラム、ダンサー、そしてアフリカ人シンガーが揃っています。| メンバーの背景は多彩で、音楽以外の顔も持ちます——国内有数の狩人、呪術師の家系に生まれた歌い手、今どきのアフリカン・ポップのプロデューサー。| この組み合わせが、アフリカ国内と国際的な音楽シーンでの評価につながっています。',
+        'teams.w9b.g1': '特記事項',
+        'teams.w9b.l1': '2010 年パリ国際先住民文化継承招待大会。| ガンビア国内では村から首都、さらに他のアフリカ諸国まで受賞多数。| 一部メンバーが 2015 年 5 月に台北市文化局のストリートアーティスト認定を取得（380 団体中 30 数団体のみ）。| 現在はマカオと米国に長期常演。一部メンバーは 2015 年に台中の麗宝リゾートと 1 年契約、高雄の義大でも 5 年間出演。| 2020 年、新北市政府の太鼓芸術祭のデモンストレーション団体に選出。| 2020 年、新北市アフリカ文化館のデモンストレーション団体に選出。',
         'teams.s9': '司会 TongTong ｜ プロフィール', 'teams.b9': '7年以上の司会経験 · 飛藝ダンスチーム代表',
         'teams.s10': '司会 TongTong ｜ 実績', 'teams.b10': '忘年会・新年会 · 発表会 · ファミリーデー',
         'teams.i5.bg': '7年以上のプロ司会歴。明るく親しみやすい性格で、「飛藝ダンスチーム」の代表も務めます。',
@@ -4008,7 +4032,9 @@
       { a: '#1b2436', b: '#080b12', src: '/assets/team/13.jpg', focus: .05 },
       { a: '#2a2a2a', b: '#0d0d0d', src: '/assets/team/14.jpg', focus: .05 },
       { a: '#24467f', b: '#0b1426', src: '/assets/team/15.jpg', focus: .50 },
-      { a: '#2b4e8c', b: '#0c1729', src: '/assets/team/16.jpg', focus: .50 }
+      { a: '#2b4e8c', b: '#0c1729', src: '/assets/team/16.jpg', focus: .50 },
+      { a: '#5a3a18', b: '#1a1008', src: '/assets/team/17.jpg', focus: .06 },
+      { a: '#3d5a2a', b: '#101a0b', src: '/assets/team/18.jpg', focus: .50 }
     ];
 
     /* 每位主持人佔兩格：第一格是介紹，第二格是過往經歷 */
@@ -4028,9 +4054,11 @@
       { kind: 'works', who: 6 },
       { kind: 'intro', who: 7 },
       { kind: 'works', who: 7 },
-      /* 鼓團是團體，兩格都走條列：團體介紹、特殊經歷 */
+      /* 表演團體兩格都走條列：團體介紹、特殊經歷 */
       { kind: 'works', who: '8a' },
-      { kind: 'works', who: '8b' }
+      { kind: 'works', who: '8b' },
+      { kind: 'works', who: '9a' },
+      { kind: 'works', who: '9b' }
     ];
 
     /* 經歷條列裡的主持語言註記。名稱本身是專有名詞、三語共用，
