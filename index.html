@@ -618,65 +618,50 @@
   }
 
   /* ── 關於我們的字標 ─────────────────────
-     兩列，每一列是「大字 ／ 羅馬拼音 ── 釋義」。
-     橫線用 1fr 撐開，釋義因此靠右對齊，兩列的右緣對得齊。 */
+     兩列，每一列是「大字　＋　拼音／釋義」。
+     不畫連接線：兩個字本身就是最重的元素，再拉一條線過去會多一個
+     和它們競爭的水平筆畫。改成靠字級與留白分層——
+     大字最重、釋義次之、拼音最輕，右側兩行的左緣對齊成一道隱形的軸。 */
   .name-mark {
     display: grid;
-    gap: clamp(1.1rem, 3.4vw, 2.2rem);
-    margin-bottom: 2.75rem;
+    gap: clamp(1.4rem, 4vw, 2.6rem);
+    margin-bottom: 3rem;
   }
 
   .nm-row {
     display: grid;
-    grid-template-columns: auto auto 1fr auto;
+    grid-template-columns: auto 1fr;
     align-items: center;
-    column-gap: clamp(.7rem, 2vw, 1.4rem);
+    column-gap: clamp(1.2rem, 4vw, 2.8rem);
   }
 
   .nm-ch {
-    font-size: calc(clamp(3.2rem, 11vw, 6.4rem) * var(--fs-display));
+    font-size: calc(clamp(3.4rem, 12vw, 7rem) * var(--fs-display));
     font-weight: 300;
-    line-height: .92;
+    line-height: .88;
     letter-spacing: 0;
   }
 
-  .nm-ro {
-    font-size: calc(clamp(.62rem, 1.5vw, .78rem) * var(--fs-label));
-    letter-spacing: .24em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, .42);
-    white-space: nowrap;
-    align-self: end;
-    padding-bottom: .9em;
+  .nm-side {
+    display: grid;
+    gap: .45em;
+    /* 兩行往下壓一點，視覺上對齊大字的中線而不是外框中線 */
+    padding-top: .15em;
   }
 
-  .nm-rule {
-    display: block;
-    height: 1px;
-    background: rgba(255, 255, 255, .26);
-    /* 進場時從左邊長出來 */
-    transform-origin: 0 50%;
+  .nm-ro {
+    font-size: calc(clamp(.6rem, 1.4vw, .72rem) * var(--fs-label));
+    letter-spacing: .42em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .38);
+    line-height: 1;
   }
 
   .nm-tx {
-    font-size: calc(clamp(.95rem, 2.4vw, 1.35rem) * var(--fs-display));
+    font-size: calc(clamp(1rem, 2.6vw, 1.5rem) * var(--fs-display));
     font-weight: 300;
-    letter-spacing: .04em;
-    white-space: nowrap;
-  }
-
-  /* 窄螢幕塞不下四欄：大字與拼音留在上排，橫線與釋義落到下排，
-     並且和大字切齊——釋義本來就比大字窄，靠右會顯得飄 */
-  @media (max-width: 559px) {
-    .nm-row {
-      grid-template-columns: auto 1fr;
-      row-gap: .35rem;
-    }
-
-    .nm-ch { grid-row: 1; }
-    .nm-ro { grid-row: 1; align-self: end; padding-bottom: .55em; }
-    .nm-rule { grid-row: 2; grid-column: 1; width: 2.2rem; align-self: center; }
-    .nm-tx { grid-row: 2; grid-column: 2; white-space: normal; }
+    letter-spacing: .06em;
+    line-height: 1.3;
   }
 
   .scene-body {
@@ -1314,7 +1299,7 @@
      於是整排把右邊那顆箭頭擠出畫面（實測 320/360/390 都溢位）。
      而且 5px 的點在觸控上本來就按不準，16 個點各給 44px 更是不可能。
      所以窄螢幕收起圓點，改以箭頭為主要操作——箭頭有 50px，按得到；
-     位置由上方的 01 / 18 計數器交代，左右滑動也照常可用。 */
+     位置由上方的 01 / 16 計數器交代，左右滑動也照常可用。 */
   @media (max-width: 559px) {
     .film-dots { display: none; }
     .film-controls { justify-content: center; gap: clamp(2rem, 18vw, 5rem); }
@@ -1916,15 +1901,17 @@
       <h2 class="scene-title name-mark fx-skip">
         <span class="nm-row">
           <span class="nm-ch">澄</span>
-          <span class="nm-ro">/ CHENG</span>
-          <i class="nm-rule" aria-hidden="true"></i>
-          <span class="nm-tx" data-i18n="about.m1">clarity, made transparent</span>
+          <span class="nm-side">
+            <span class="nm-ro">Cheng</span>
+            <span class="nm-tx" data-i18n="about.m1">clarity, made transparent</span>
+          </span>
         </span>
         <span class="nm-row">
           <span class="nm-ch">耘</span>
-          <span class="nm-ro">/ YUN</span>
-          <i class="nm-rule" aria-hidden="true"></i>
-          <span class="nm-tx" data-i18n="about.m2">the ground worked, step by step</span>
+          <span class="nm-side">
+            <span class="nm-ro">Yun</span>
+            <span class="nm-tx" data-i18n="about.m2">the ground worked, step by step</span>
+          </span>
         </span>
       </h2>
 
@@ -2028,7 +2015,7 @@
       </div>
 
       <!-- 邊欄計數器：角標壓在黑色底片上等於隱形，改用數字標示目前是第幾位 -->
-      <p class="film-count" aria-hidden="true"><b id="filmCount">01</b><i>/ 18</i></p>
+      <p class="film-count" aria-hidden="true"><b id="filmCount">01</b><i>/ 16</i></p>
 
       <div class="film-stage">
       <!-- 中央聚光：畫在 3D 場景外，免得和正中央那一格同深度互穿 -->
@@ -2068,28 +2055,22 @@
             <div class="frame-shot" style="--a:#20405e; --b:#0a131c; background-image: url(/assets/team/10.jpg); background-size: cover; background-position: center 20%"><span class="num">10</span><span class="frame-role" data-i18n="teams.s10">Host TongTong | Selected work</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#3a3550; --b:#111018; background-image: url(/assets/team/11.jpg); background-size: cover; background-position: center 50%"><span class="num">11</span><span class="frame-role" data-i18n="teams.s11">Violinist Belina | Profile</span></div>
+            <div class="frame-shot" style="--a:#3a3550; --b:#111018; background-image: url(/assets/team/11.jpg); background-size: cover; background-position: center 50%"><span class="num">11</span><span class="frame-role" data-i18n="teams.s11">Band Belina Chang</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#4a3556; --b:#140f1a; background-image: url(/assets/team/12.jpg); background-size: cover; background-position: center 40%"><span class="num">12</span><span class="frame-role" data-i18n="teams.s12">Violinist Belina | Selected work</span></div>
+            <div class="frame-shot" style="--a:#1b2436; --b:#080b12; background-image: url(/assets/team/12.jpg); background-size: cover; background-position: center 5%"><span class="num">12</span><span class="frame-role" data-i18n="teams.s12">Band LC Li</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#1b2436; --b:#080b12; background-image: url(/assets/team/13.jpg); background-size: cover; background-position: center 5%"><span class="num">13</span><span class="frame-role" data-i18n="teams.s13">Singer LC | Profile</span></div>
+            <div class="frame-shot" style="--a:#24467f; --b:#0b1426; background-image: url(/assets/team/13.jpg); background-size: cover; background-position: center 50%"><span class="num">13</span><span class="frame-role" data-i18n="teams.s13">Dance troupe Funky Girls</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#2a2a2a; --b:#0d0d0d; background-image: url(/assets/team/14.jpg); background-size: cover; background-position: center 5%"><span class="num">14</span><span class="frame-role" data-i18n="teams.s14">Singer LC | Selected work</span></div>
+            <div class="frame-shot" style="--a:#3d5a2a; --b:#101a0b; background-image: url(/assets/team/14.jpg); background-size: cover; background-position: center 50%"><span class="num">14</span><span class="frame-role" data-i18n="teams.s14">Dance troupe Manga African War Drums</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#24467f; --b:#0b1426; background-image: url(/assets/team/15.jpg); background-size: cover; background-position: center 50%"><span class="num">15</span><span class="frame-role" data-i18n="teams.s15">Dance troupe Funky Girls | About the group</span></div>
+            <div class="frame-shot" style="--a:#2a2a2a; --b:#0d0d0d; background-image: url(/assets/team/15.jpg); background-size: cover; background-position: center 45%"><span class="num">15</span><span class="frame-role" data-i18n="teams.s15">Performance act Brian Lin, magician</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#2b4e8c; --b:#0c1729; background-image: url(/assets/team/16.jpg); background-size: cover; background-position: center 50%"><span class="num">16</span><span class="frame-role" data-i18n="teams.s16">Dance troupe Funky Girls | Highlights</span></div>
-          </article>
-          <article class="frame">
-            <div class="frame-shot" style="--a:#5a3a18; --b:#1a1008; background-image: url(/assets/team/17.jpg); background-size: cover; background-position: center 6%"><span class="num">17</span><span class="frame-role" data-i18n="teams.s17">Drum troupe Manga African War Drums | About the group</span></div>
-          </article>
-          <article class="frame">
-            <div class="frame-shot" style="--a:#3d5a2a; --b:#101a0b; background-image: url(/assets/team/18.jpg); background-size: cover; background-position: center 50%"><span class="num">18</span><span class="frame-role" data-i18n="teams.s18">Drum troupe Manga African War Drums | Highlights</span></div>
+            <div class="frame-shot" style="--a:#6b2a10; --b:#1c0c06; background-image: url(/assets/team/16.jpg); background-size: cover; background-position: center 50%"><span class="num">16</span><span class="frame-role" data-i18n="teams.s16">Performance act Fire dance</span></div>
           </article>
         </div>
       </div>
@@ -2395,14 +2376,6 @@
         'teams.f.inst': 'Instruments', 'teams.f.edu': 'Education',
         'teams.f.post': 'Teaching posts', 'teams.f.play': 'On stage',
         'teams.f.music': 'Background & style', 'teams.f.ptypes': 'Best suited to',
-        'teams.b11': 'Violin & viola \u00b7 Golden Melody Award nominee',
-        'teams.b12': 'Concerts \u00b7 award ceremonies \u00b7 brand events',
-        'teams.b13': 'Singer-songwriter and keyboardist \u00b7 talent-show winner',
-        'teams.b14': 'Concerts \u00b7 hotel residencies \u00b7 commercial gigs',
-        'teams.b15': 'Cheer dance \u00b7 commercial stage sets',
-        'teams.b16': 'Corporate year-end banquets \u00b7 pro sports venues \u00b7 outdoor carnivals',
-        'teams.b17': 'African war drums \u00b7 dance \u00b7 voice',
-        'teams.b18': 'International invitationals \u00b7 street-artist licence \u00b7 long residencies',
         'teams.todo': 'Still to be supplied: name, profile and event history.',
         'teams.i6.inst': 'Violin / viola.',
         'teams.i6.edu': 'MA and BA in music, National Taipei University of Education; Tainan Girls\u2019 Senior High School.',
@@ -2623,14 +2596,12 @@
         'teams.f.inst': '演奏樂器', 'teams.f.edu': '學歷背景',
         'teams.f.post': '現任職務', 'teams.f.play': '演奏特色',
         'teams.f.music': '音樂資歷與風格', 'teams.f.ptypes': '擅長演出類型',
-        'teams.s11': '小提琴手 張家瑜 Belina ｜ 個人介紹', 'teams.b11': '小提琴 / 中提琴 · 金曲獎入圍',
-        'teams.s12': '小提琴手 張家瑜 Belina ｜ 個人經歷', 'teams.b12': '演唱會 · 頒獎典禮 · 品牌活動樂手',
-        'teams.s13': '歌手 黎謙 LC ｜ 個人介紹', 'teams.b13': '唱作人兼鍵盤手 · 選秀冠亞軍',
-        'teams.s14': '歌手 黎謙 LC ｜ 個人經歷', 'teams.b14': '演唱會 · 飯店駐唱 · 商演',
-        'teams.s15': '舞團 Funky Girls ｜ 團體介紹', 'teams.b15': '啦啦隊熱舞 · 商演舞蹈',
-        'teams.s16': '舞團 Funky Girls ｜ 特殊經歷', 'teams.b16': '企業尾牙 · 職業球場 · 戶外嘉年華',
-        'teams.s17': '鼓團 曼加非洲戰鼓團 ｜ 團體介紹', 'teams.b17': '非洲戰鼓 · 舞蹈 · 歌手',
-        'teams.s18': '鼓團 曼加非洲戰鼓團 ｜ 特殊經歷', 'teams.b18': '國際邀請賽 · 街頭藝人 · 長駐演出',
+        'teams.s11': '樂團 張家瑜 Belina',
+        'teams.s12': '樂團 黎謙 LC',
+        'teams.s13': '舞團 Funky Girls',
+        'teams.s14': '舞團 曼加非洲戰鼓團',
+        'teams.s15': '表演團 魔術師 林桓宇 Brian',
+        'teams.s16': '表演團 火舞',
         'teams.todo': '資料待提供：姓名、介紹與過往經歷都還沒拿到。',
         'teams.i6.inst': '小提琴（Violin）／中提琴（Viola）。',
         'teams.i6.edu': '畢業於國立臺北教育大學音樂研究所、國立臺北教育大學音樂系及國立臺南女子高級中學。',
@@ -2838,14 +2809,12 @@
         'teams.f.inst': '担当楽器', 'teams.f.edu': '学歴',
         'teams.f.post': '現職', 'teams.f.play': '演奏の持ち味',
         'teams.f.music': '音楽歴とスタイル', 'teams.f.ptypes': '得意な出演',
-        'teams.s11': 'ヴァイオリニスト 張家瑜 Belina ｜ プロフィール', 'teams.b11': 'ヴァイオリン／ヴィオラ · 金曲奨ノミネート',
-        'teams.s12': 'ヴァイオリニスト 張家瑜 Belina ｜ 実績', 'teams.b12': 'コンサート · 授賞式 · ブランドイベント',
-        'teams.s13': 'シンガー 黎謙 LC ｜ プロフィール', 'teams.b13': 'シンガーソングライター兼キーボード · オーディション優勝・準優勝',
-        'teams.s14': 'シンガー 黎謙 LC ｜ 実績', 'teams.b14': 'コンサート · ホテル常演 · 商業公演',
-        'teams.s15': 'ダンスチーム Funky Girls ｜ 団体紹介', 'teams.b15': 'チアダンス · 商業公演',
-        'teams.s16': 'ダンスチーム Funky Girls ｜ 特記事項', 'teams.b16': '企業忘年会 · プロスポーツ会場 · 屋外カーニバル',
-        'teams.s17': 'ドラムチーム 曼加アフリカ戦鼓団 ｜ 団体紹介', 'teams.b17': 'アフリカ戦鼓 · ダンス · ヴォーカル',
-        'teams.s18': 'ドラムチーム 曼加アフリカ戦鼓団 ｜ 特記事項', 'teams.b18': '国際招待大会 · ストリートアーティスト認定 · 長期常演',
+        'teams.s11': 'バンド 張家瑜 Belina',
+        'teams.s12': 'バンド 黎謙 LC',
+        'teams.s13': 'ダンスチーム Funky Girls',
+        'teams.s14': 'ダンスチーム 曼加アフリカ戦鼓団',
+        'teams.s15': 'パフォーマー マジシャン 林桓宇 Brian',
+        'teams.s16': 'パフォーマー ファイアダンス',
         'teams.todo': '氏名・プロフィール・実績は後日追加します。',
         'teams.i6.inst': 'ヴァイオリン（Violin）／ヴィオラ（Viola）。',
         'teams.i6.edu': '国立台北教育大学 音楽研究科修了、同大学 音楽学科卒業、国立台南女子高級中学卒業。',
@@ -3218,9 +3187,6 @@
         gsap.fromTo(mark.querySelectorAll('.nm-ch, .nm-ro, .nm-tx'),
           { opacity: 0, yPercent: 38 },
           { opacity: 1, yPercent: 0, duration: .66, ease: 'power3.out', stagger: .075 });
-        gsap.fromTo(mark.querySelectorAll('.nm-rule'),
-          { scaleX: 0, opacity: 0 },
-          { scaleX: 1, opacity: 1, duration: .85, ease: 'power3.out', stagger: .075, delay: .12 });
       }
 
       const lines = scene.querySelector('.fx-lines');
@@ -3765,7 +3731,7 @@
     }
 
     /* 介紹：資歷背景、主持風格、語文能力……一組詞條 */
-    function fillIntro(box, who) {
+    function fillIntro(box, who, quiet) {
       const dl = document.createElement('dl');
       dl.className = 'person-fields';
       ['inst', 'bg', 'edu', 'post', 'look', 'stage', 'talent',
@@ -3780,12 +3746,19 @@
         dd.textContent = v;
         dl.append(dt, dd);
       });
-      if (!dl.childElementCount) { box.appendChild(todoNote()); return; }
+      if (!dl.childElementCount) {
+        if (!quiet) { box.appendChild(todoNote()); }
+        return false;
+      }
       box.appendChild(dl);
+      return true;
     }
 
     /* 經歷：四個分類，每類一串條列 */
-    function fillWorks(box, who) {
+    function fillWorks(box, who, quiet) {
+      /* 自己數放了幾組，不能看 box.childElementCount——
+         合併成一格之後，容器裡可能已經有個人欄位了 */
+      let added = 0;
       for (let g = 1; g <= 4; g++) {
         const head = t('teams.w' + who + '.g' + g);
         const items = t('teams.w' + who + '.l' + g);
@@ -3803,8 +3776,10 @@
           ul.appendChild(li);
         });
         box.append(h, ul);
+        added += 1;
       }
-      if (!box.childElementCount) { box.appendChild(todoNote()); }
+      if (!added && !quiet) { box.appendChild(todoNote()); }
+      return added > 0;
     }
 
     function renderPerson() {
@@ -3830,8 +3805,21 @@
 
       const text = document.createElement('div');
       const meta = TEAM[detailIndex];
-      if (meta && meta.kind === 'works') { fillWorks(text, meta.who); }
-      else if (meta) { fillIntro(text, meta.who); }
+      if (!meta) { /* 沒有對應資料就留空 */ }
+      else if (meta.kind === 'works') { fillWorks(text, meta.who); }
+      else if (meta.kind === 'both') {
+        /* 一位一格：個人欄位在上，經歷條列接在後面。
+           兩邊都叫它們別自己放「待補」，兩邊都空的時候才放一次 */
+        const gotIntro = fillIntro(text, meta.who, true);
+        const gotWorks = fillWorks(text, meta.who, true);
+        if (!gotIntro && !gotWorks) { text.appendChild(todoNote()); }
+      }
+      else if (meta.kind === 'worksOnly') {
+        /* 團體：把兩段條列接成同一格 */
+        const got = meta.who.map((w) => fillWorks(text, w, true));
+        if (!got.some(Boolean)) { text.appendChild(todoNote()); }
+      }
+      else { fillIntro(text, meta.who); }
 
       wrap.appendChild(shot);
       wrap.appendChild(text);
@@ -4122,13 +4110,11 @@
       { a: '#25505a', b: '#0a1619', src: '/assets/team/09.jpg', focus: .12 },
       { a: '#20405e', b: '#0a131c', src: '/assets/team/10.jpg', focus: .20 },
       { a: '#3a3550', b: '#111018', src: '/assets/team/11.jpg', focus: .50 },
-      { a: '#4a3556', b: '#140f1a', src: '/assets/team/12.jpg', focus: .40 },
-      { a: '#1b2436', b: '#080b12', src: '/assets/team/13.jpg', focus: .05 },
-      { a: '#2a2a2a', b: '#0d0d0d', src: '/assets/team/14.jpg', focus: .05 },
-      { a: '#24467f', b: '#0b1426', src: '/assets/team/15.jpg', focus: .50 },
-      { a: '#2b4e8c', b: '#0c1729', src: '/assets/team/16.jpg', focus: .50 },
-      { a: '#5a3a18', b: '#1a1008', src: '/assets/team/17.jpg', focus: .06 },
-      { a: '#3d5a2a', b: '#101a0b', src: '/assets/team/18.jpg', focus: .50 }
+      { a: '#1b2436', b: '#080b12', src: '/assets/team/12.jpg', focus: .05 },
+      { a: '#24467f', b: '#0b1426', src: '/assets/team/13.jpg', focus: .50 },
+      { a: '#3d5a2a', b: '#101a0b', src: '/assets/team/14.jpg', focus: .50 },
+      { a: '#2a2a2a', b: '#0d0d0d', src: '/assets/team/15.jpg', focus: .45 },
+      { a: '#6b2a10', b: '#1c0c06', src: '/assets/team/16.jpg', focus: .50 }
     ];
 
     /* 每位主持人佔兩格：第一格是介紹，第二格是過往經歷 */
@@ -4143,16 +4129,14 @@
       { kind: 'works', who: 4 },
       { kind: 'intro', who: 5 },
       { kind: 'works', who: 5 },
-      /* 第六位起：照片先上，姓名與文案待提供 */
-      { kind: 'intro', who: 6 },
-      { kind: 'works', who: 6 },
-      { kind: 'intro', who: 7 },
-      { kind: 'works', who: 7 },
-      /* 表演團體兩格都走條列：團體介紹、特殊經歷 */
-      { kind: 'works', who: '8a' },
-      { kind: 'works', who: '8b' },
-      { kind: 'works', who: '9a' },
-      { kind: 'works', who: '9b' }
+      /* 主持人之後一位一格：介紹與經歷併在同一格裡。
+         團體沒有個人欄位，只有條列，所以用 worksOnly。 */
+      { kind: 'both', who: 6 },                    /* 樂團 張家瑜 */
+      { kind: 'both', who: 7 },                    /* 樂團 黎謙 */
+      { kind: 'worksOnly', who: ['8a', '8b'] },    /* 舞團 Funky Girls */
+      { kind: 'worksOnly', who: ['9a', '9b'] },    /* 舞團 曼加非洲戰鼓團 */
+      { kind: 'intro', who: 10 },                  /* 表演團 魔術師 —— 文案待提供 */
+      { kind: 'intro', who: 11 }                   /* 表演團 火舞 —— 文案待提供 */
     ];
 
     /* 經歷條列裡的主持語言註記。名稱本身是專有名詞、三語共用，
