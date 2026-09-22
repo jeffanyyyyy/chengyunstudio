@@ -617,6 +617,68 @@
     margin-bottom: 1.75rem;
   }
 
+  /* ── 關於我們的字標 ─────────────────────
+     兩列，每一列是「大字 ／ 羅馬拼音 ── 釋義」。
+     橫線用 1fr 撐開，釋義因此靠右對齊，兩列的右緣對得齊。 */
+  .name-mark {
+    display: grid;
+    gap: clamp(1.1rem, 3.4vw, 2.2rem);
+    margin-bottom: 2.75rem;
+  }
+
+  .nm-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
+    column-gap: clamp(.7rem, 2vw, 1.4rem);
+  }
+
+  .nm-ch {
+    font-size: calc(clamp(3.2rem, 11vw, 6.4rem) * var(--fs-display));
+    font-weight: 300;
+    line-height: .92;
+    letter-spacing: 0;
+  }
+
+  .nm-ro {
+    font-size: calc(clamp(.62rem, 1.5vw, .78rem) * var(--fs-label));
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .42);
+    white-space: nowrap;
+    align-self: end;
+    padding-bottom: .9em;
+  }
+
+  .nm-rule {
+    display: block;
+    height: 1px;
+    background: rgba(255, 255, 255, .26);
+    /* 進場時從左邊長出來 */
+    transform-origin: 0 50%;
+  }
+
+  .nm-tx {
+    font-size: calc(clamp(.95rem, 2.4vw, 1.35rem) * var(--fs-display));
+    font-weight: 300;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+
+  /* 窄螢幕塞不下四欄：大字與拼音留在上排，橫線與釋義落到下排，
+     並且和大字切齊——釋義本來就比大字窄，靠右會顯得飄 */
+  @media (max-width: 559px) {
+    .nm-row {
+      grid-template-columns: auto 1fr;
+      row-gap: .35rem;
+    }
+
+    .nm-ch { grid-row: 1; }
+    .nm-ro { grid-row: 1; align-self: end; padding-bottom: .55em; }
+    .nm-rule { grid-row: 2; grid-column: 1; width: 2.2rem; align-self: center; }
+    .nm-tx { grid-row: 2; grid-column: 2; white-space: normal; }
+  }
+
   .scene-body {
     max-width: 40rem;
     margin: 0 0 1.25rem;
@@ -1849,7 +1911,22 @@
   <div class="scene-inner grid place-items-center min-h-[100svh] px-8 md:px-16 py-28">
     <div class="stagger w-full max-w-3xl text-left">
       <span class="eyebrow" data-i18n="about.eyebrow">01 — About Us</span>
-      <h2 class="scene-title fx-chars fx-skip" data-i18n-html="about.tagline">Cheng — clarity, made transparent.<br />Yun — the ground worked, step by step.</h2>
+      <!-- 公司名拆成兩個字各自成列：大字、羅馬拼音、橫線、釋義。
+           釋義是翻譯的，「澄」「耘」本身是品牌字，三種語言都一樣 -->
+      <h2 class="scene-title name-mark fx-skip">
+        <span class="nm-row">
+          <span class="nm-ch">澄</span>
+          <span class="nm-ro">/ CHENG</span>
+          <i class="nm-rule" aria-hidden="true"></i>
+          <span class="nm-tx" data-i18n="about.m1">clarity, made transparent</span>
+        </span>
+        <span class="nm-row">
+          <span class="nm-ch">耘</span>
+          <span class="nm-ro">/ YUN</span>
+          <i class="nm-rule" aria-hidden="true"></i>
+          <span class="nm-tx" data-i18n="about.m2">the ground worked, step by step</span>
+        </span>
+      </h2>
 
       <p class="scene-body" data-i18n="about.p1">In this industry, asymmetry of information is the most expensive cost of all. Companies spend heavily and still get a rough result, because the work has been subcontracted down through layer after layer; meanwhile the performers on stage and the technicians on the front line meet squeezed rates and deductions nobody explains. Chengyun was founded to change that.</p>
       <p class="scene-body" data-i18n="about.p2">We run on the discipline of corporate management, with a modular, transparent pricing system that breaks event costs and service specifications down scientifically — giving corporate clients a clear, standardised process with real control over budget. Our work spans large corporate annual events and brand launches, high-end visual and physical craft design, integration of local artisans and art IP, and low-carbon event delivery.</p>
@@ -2291,6 +2368,10 @@
        事實性內容（日期、費用、規範）三語一致，只換語言不換條件。 */
     const I18N = {
       en: {
+        /* 字標的釋義。英文其餘內容走版面預設值，但這兩句一定要在字典裡，
+           否則從別的語言切回英文時，applyLang 查不到值就不覆寫，
+           畫面會卡在上一個語言 */
+        'about.m1': 'clarity, made transparent', 'about.m2': 'the ground worked, step by step',
         'hero.top': 'View All Projects', 'hero.hold': 'Hold or Scroll',
         'label.intro': '— Entering', 'hint.intro': 'Scroll to run the film · Esc to go back',
         'intro.hint': 'Scroll to continue', 'intro.skip': 'Skip →',
@@ -2474,7 +2555,7 @@
         'hint.default': '按 Esc 返回',
         'hero.lede': '澄耘活動工作室創立於 2026 年，專注高質感活動整合、品牌視覺設計與 ESG 永續會展。我們以企業管理的嚴謹架構為核心，推行「模組化透明報價」，把成本與規格科學化拆解，讓每一筆預算都看得見、算得清。從企劃設計到現場執行，一站到位。',
         'about.eyebrow': '01 — 關於澄耘',
-        'about.tagline': '澄，為澄清透明；<br />耘，乃步履耕耘。',
+        'about.m1': '為澄清透明', 'about.m2': '乃步履耕耘',
         'about.p1': '在活動產業裡，資訊不對等是最昂貴的成本。企業花了高額預算，卻因層層轉包換來粗糙的現場；舞台上的表演者與前線的軟硬體技師，則常遭遇低價壓榨與不透明扣款。澄耘的成立，就是為了改變這件事。',
         'about.p2': '我們以企業管理的嚴謹架構為核心，推行「模組化透明報價體系」，將活動成本與服務規格科學化拆解，為企業客戶建立清晰、標準且具備高度預算掌控力的服務流程。業務範疇涵蓋大型企業年會與品牌發布會策劃、高端視覺與實體工藝設計、在地職人與藝術 IP 整合，以及綠色低碳活動執行方案。',
         'about.p3': '澄耘採取「創辦人親自操刀 × 頂級職人網絡」的運作模式。結合精準的專案流程控管（SOP）與深厚的視覺審美，從前期企劃、設計規格設定到現場執行控管，提供一站式的高品質解決方案。',
@@ -2689,7 +2770,7 @@
         'hint.default': 'Esc で戻る',
         'hero.lede': '澄耘活動工作室は2026年設立。上質なイベント統合、ブランドビジュアルデザイン、ESGを踏まえたMICEを手がけます。企業経営の厳密な枠組みを軸に「モジュール型の透明な見積」を採用し、コストと仕様を科学的に分解。予算の一つひとつが見え、確かめられる状態にします。企画から当日の運営まで、ワンストップで。',
         'about.eyebrow': '01 — 澄耘について',
-        'about.tagline': '澄は、澄みわたる透明さ。<br />耘は、一歩ずつ耕すこと。',
+        'about.m1': '澄みわたる透明さ', 'about.m2': '一歩ずつ耕すこと',
         'about.p1': 'イベント産業において、情報の非対称性こそ最も高くつくコストです。企業は多額の予算を投じながら、幾重もの下請けを経て粗い現場を受け取る。一方で舞台に立つ演者や最前線の技術者は、買い叩きや不透明な減額に遭う。澄耘はそれを変えるために設立されました。',
         'about.p2': '企業経営の厳密な枠組みを軸に「モジュール型の透明な見積体系」を推進し、イベントのコストとサービス仕様を科学的に分解。企業のお客様に、明快で標準化された、予算を確実に管理できるプロセスを提供します。業務範囲は、大規模な社内式典やブランド発表会の企画、ハイエンドなビジュアルと実物工芸のデザイン、地域の職人とアートIPの統合、そして低炭素なイベント運営に及びます。',
         'about.p3': '澄耘は「創業者が自ら手を動かす × 一流の職人ネットワーク」という体制をとります。精緻なプロジェクト管理（SOP）と確かな視覚的審美眼を組み合わせ、前期の企画から仕様設定、現場の運営管理まで、ワンストップで高品質な解決策をご提供します。',
@@ -3127,6 +3208,19 @@
         gsap.fromTo(chars.querySelectorAll('.ch'),
           { opacity: 0, yPercent: 55 },
           { opacity: 1, yPercent: 0, duration: .62, ease: 'power3.out', stagger: .026 });
+      }
+
+      /* 字標：文字往上浮，橫線從左邊長出來。
+         不走 fx-chars——fxSplitChars 只拆直接的文字節點，
+         這裡的字都包在子元素裡，拆不到 */
+      const mark = scene.querySelector('.name-mark');
+      if (mark) {
+        gsap.fromTo(mark.querySelectorAll('.nm-ch, .nm-ro, .nm-tx'),
+          { opacity: 0, yPercent: 38 },
+          { opacity: 1, yPercent: 0, duration: .66, ease: 'power3.out', stagger: .075 });
+        gsap.fromTo(mark.querySelectorAll('.nm-rule'),
+          { scaleX: 0, opacity: 0 },
+          { scaleX: 1, opacity: 1, duration: .85, ease: 'power3.out', stagger: .075, delay: .12 });
       }
 
       const lines = scene.querySelector('.fx-lines');
