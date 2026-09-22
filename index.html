@@ -1743,13 +1743,15 @@
 <div class="blinds" id="blinds" aria-hidden="true"></div>
 
 <div class="stage" id="stage" aria-hidden="true">
-  <video class="stage-video" id="bgVideo" autoplay muted loop playsinline preload="auto">
+  <video class="stage-video" id="bgVideo" autoplay muted loop playsinline preload="auto"
+         poster="/assets/poster-hero.jpg">
     <source src="/assets/bg-obsidian.mp4" type="video/mp4" />
   </video>
   <!-- 內頁的背景：水晶落定之後的那一段，倒放接正放，循環點看不出來。
        首頁不顯示，離開首頁才淡進來；過場結束進到關於我們時從第 0 秒起播，
        而第 0 秒正是過場影片的最後一格，所以水晶是「停在那裡」而不是重來一次 -->
-  <video class="stage-video stage-rest" id="restVideo" muted loop playsinline preload="auto">
+  <video class="stage-video stage-rest" id="restVideo" muted loop playsinline preload="auto"
+         poster="/assets/poster-rest.jpg">
     <source src="/assets/crystal-rest.mp4" type="video/mp4" />
   </video>
   <div class="stage-veil"></div>
@@ -2902,14 +2904,31 @@
     if (reduce) { bgVideo.pause(); }
     else { bgVideo.play().catch(() => { /* 擋自動播放就維持靜幀，版面不受影響 */ }); }
 
-    /* 有些嵌入情境（iframe 的 autoplay 權限）會擋掉自動播放，第一次互動時再補播一次 */
-    const resumeVideo = () => {
-      if (!reduce && bgVideo.paused) { bgVideo.play().catch(() => {}); }
+    /* 自動播放被擋的情況比想像中多：iframe 沒給 autoplay 權限、
+       iOS 的低耗電模式（電池圖示變黃的那個）、省流量模式、
+       以及某些瀏覽器的節能設定。這些情況下畫面不會是「靜幀」——
+       沒有 poster 的 <video> 就是一塊空的黑，所以上面兩支都補了 poster。
+
+       這裡再補一道：使用者一有動作就試著把影片接回去。
+       關鍵是只有「真的播起來」才解除監聽——舊版不管成不成功都解除，
+       等於只有一次機會，低耗電模式下常常一次是不夠的。 */
+    function stopResume() {
       removeEventListener('pointerdown', resumeVideo);
       removeEventListener('keydown', resumeVideo);
-    };
+      removeEventListener('touchstart', resumeVideo);
+    }
+
+    function resumeVideo() {
+      if (reduce) { stopResume(); return; }
+      /* 該播的是哪一支要看現在在首頁還是內頁 */
+      const v = restOn ? restVideo : bgVideo;
+      if (!v.paused) { stopResume(); return; }
+      v.play().then(stopResume, () => { /* 還是被擋，留著等下一次互動 */ });
+    }
+
     addEventListener('pointerdown', resumeVideo);
     addEventListener('keydown', resumeVideo);
+    addEventListener('touchstart', resumeVideo, { passive: true });
 
     /* 內頁背景：只在離開首頁時跑，首頁時停著不佔解碼資源。
        每次從首頁側進到內頁都倒回第 0 秒——那一格正是過場影片的最後一格，
