@@ -1518,21 +1518,6 @@
     background: #05060a;
   }
 
-  /* 直向螢幕：過場影片改成整格塞進去，不要裁切。
-
-     這兩支素材是 16:9，直向手機是 9:19.5。用 cover 鋪滿的話，
-     854px 寬的畫面會被放大到 1516px 才填得滿高度——
-     結果是只看得到中間 26%，左右 74% 全部裁掉，
-     而且放大 3.9 倍之後畫質也垮了。
-
-     幾何上沒有兩全：不是「看到 26% 但鋪滿」，就是「看到 100% 但只有一條」。
-     這兩支是要被捲動推著看的內容，不是裝飾，所以選完整。
-
-     上下留白不會像黑邊——這兩支素材本來就是全黑背景，
-     和 .scene-intro 的 #05060a 接在一起看不出接縫。 */
-  @media (max-aspect-ratio: 1 / 1) {
-    .intro-video { object-fit: contain; }
-  }
 
   /* 第三段疊在第二節上面，交界時才淡進來 */
   .intro-b { opacity: 0; }
@@ -4623,8 +4608,23 @@
     function introPreload() {
       if (introLoaded || reduce) { return; }
       introLoaded = true;
+      /* 直向螢幕另外給一支直的素材。
+
+         原素材是 16:9，直向手機是 9:19.5。硬塞只有兩條路：
+         cover 鋪滿但只看得到中間 26%（左右整片裁掉，而且放大 3.9 倍
+         連畫質都垮），或 contain 看得到全部但縮成中間一條。
+
+         所以不硬塞，改成先做一支 720x1560 的直向版：原畫面完整放在
+         中央、邊緣做成漸隱，背後鋪同一格放大 2.2 倍再重度模糊暗化的
+         底——全黑素材做這個看不出是殘影，只剩一層光暈。
+         結果是滿版而且完整，而且檔案（2.7MB）比原本手機下載的
+         480 橫向版（4.4MB）還小。
+
+         旋轉螢幕不會換檔：src 只在進場前決定一次。轉成橫的之後
+         直向素材用 cover 照樣鋪得滿，只是左右會裁掉一些。 */
+      const portrait = innerHeight > innerWidth;
       const small = innerWidth < 900 || (navigator.connection && navigator.connection.saveData);
-      const q = small ? '480' : '720';
+      const q = portrait ? 'portrait' : (small ? '480' : '720');
       introVideo.src = '/assets/seg-a-' + q + '.mp4';
       introVideoB.src = '/assets/seg-b-' + q + '.mp4';
       introVideo.load();
