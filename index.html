@@ -895,7 +895,9 @@
     width: 100%;
     height: 100%;
     cursor: grab;
-    touch-action: pan-y;
+    /* 直滑要交給膠卷自己處理，不能讓瀏覽器先拿去捲頁面。
+       設 pan-y 的話手指一往下走就收到 pointercancel，滑不動片子 */
+    touch-action: none;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -1118,7 +1120,8 @@
     transform: rotateX(9deg) rotateZ(-5.5deg);
     transform-style: preserve-3d;
     cursor: grab;
-    touch-action: pan-y;
+    /* 同上：直滑由膠卷接手 */
+    touch-action: none;
     user-select: none;
     -webkit-user-select: none;
   }
@@ -3726,12 +3729,13 @@
     /* 觸控的倍率。滾輪一格就是好幾十 px，手指不是——
        用 1.5 倍的話得走 410px 才走滿，等於整個螢幕高度，
        一般人上滑一次大約 200px，兩次之間又超過回收的時間，
-       結果是怎麼滑都進不去。3.2 倍讓一次果斷的上滑就走滿。 */
-    const HERO_TOUCH_GAIN = 3.2;
+       結果是怎麼滑都進不去。4.6 倍把它縮到 135px——
+       一個輕鬆的上滑就走滿，不必刻意把手指拉長。 */
+    const HERO_TOUCH_GAIN = 4.6;
     /* 快撥捷徑：手機上最自然的手勢是又快又短的一撥，
        距離不夠但速度夠（px/ms）就直接放行 */
-    const HERO_FLICK_PX = 60;
-    const HERO_FLICK_V = .9;
+    const HERO_FLICK_PX = 50;
+    const HERO_FLICK_V = .75;
     const heroScene = scenes.get('hero');
     let heroPush = 0;
     let heroDecay = 0;
@@ -4151,7 +4155,14 @@
     let filmW = 280;                         /* 片格寬，拖曳換算用 */
     let filmRaf = 0;
     let filmRunning = false;
-    const filmDrag = { on: false, id: null, x: 0, moved: 0, v: 0, last: 0 };
+    const filmDrag = { on: false, id: null, x: 0, y: 0, ax: '', dx: 0, dy: 0,
+                       moved: 0, v: 0, last: 0, from: 0 };
+    /* 這一撥有沒有真的把片子撥到別格。換章那邊要看它：
+       撥得動就是在看片子，撥不動（已經在最後一格）才輪到換章 */
+    let filmMovedFrame = false;
+    /* 直滑要走多少 px 才換一格。片格是橫的、螢幕是直的，
+       不能沿用片格寬；取視窗高的 16%，大約是一次從容的上滑走一格多 */
+    function filmVStep() { return clamp(innerHeight * .16, 96, 168); }
 
     function filmMetrics() {
       /* 一定要用 offsetWidth：getBoundingClientRect 量到的是「轉過之後的投影寬」，
@@ -4626,9 +4637,15 @@
       filmDrag.on = true;
       filmDrag.id = e.pointerId;
       filmDrag.x = e.clientX;
+      filmDrag.y = e.clientY;
+      filmDrag.dx = 0;
+      filmDrag.dy = 0;
+      filmDrag.ax = '';                            /* 還沒決定這一撥算橫的還是直的 */
+      filmDrag.from = Math.round(filmPos);         /* 起手停在第幾格 */
       filmDrag.moved = 0;
       filmDrag.v = 0;
       filmDrag.last = performance.now();
+      filmMovedFrame = false;
       filmSurface.classList.add('is-dragging');
       filmSurface.setPointerCapture(e.pointerId);
       filmStart();
@@ -4637,12 +4654,26 @@
     filmSurface.addEventListener('pointermove', (e) => {
       if (!filmDrag.on || e.pointerId !== filmDrag.id) { return; }
       const dx = e.clientX - filmDrag.x;
+      const dy = e.clientY - filmDrag.y;
       const dt = Math.max(performance.now() - filmDrag.last, 8);
       filmDrag.x = e.clientX;
+      filmDrag.y = e.clientY;
       filmDrag.last = performance.now();
-      filmDrag.moved += Math.abs(dx);
+      filmDrag.dx += Math.abs(dx);
+      filmDrag.dy += Math.abs(dy);
+      /* 換格與否要看兩個方向的總位移，不能只算橫的——
+         直著撥的那一撥若被當成沒動過，放開手就會被判成點擊、彈出人物介紹 */
+      filmDrag.moved += Math.abs(dx) + Math.abs(dy);
 
-      const d = -dx / filmW;                       /* 一個片格寬＝一格 */
+      /* 走超過 8px 才決定方向，之後這一撥就鎖住不再改：
+         中途換軸的話，斜著撥會在兩個方向之間跳 */
+      if (!filmDrag.ax && filmDrag.dx + filmDrag.dy > 8) {
+        filmDrag.ax = filmDrag.dy > filmDrag.dx ? 'y' : 'x';
+      }
+      if (!filmDrag.ax) { return; }
+
+      /* 橫撥：一個片格寬＝一格。直撥：上滑＝往後翻，和讀者的直覺一致 */
+      const d = filmDrag.ax === 'y' ? -dy / filmVStep() : -dx / filmW;
       filmPos = filmResist(filmPos + d);
       filmTarget = filmPos;
       filmDrag.v = d / dt * 16;                    /* 換算成每幀的速度 */
@@ -4654,6 +4685,9 @@
       filmSurface.classList.remove('is-dragging');
       /* 把放手當下的速度投射出去，再吸附到最近的一格 */
       filmGo(Math.round(clamp(filmPos + filmDrag.v * 7, 0, filmMax)));
+      /* 停在別格了＝這一撥是在看片子。停在原地＝已經撥到底，
+         那這一撥的意思就是要離開這一章，交給下面的換章判斷 */
+      filmMovedFrame = filmTarget !== filmDrag.from;
     }
 
     filmSurface.addEventListener('pointerup', filmRelease);
@@ -4822,6 +4856,9 @@
          原本會補上一次換章——「滑一下跳兩章」就是這樣來的。
          起手時鎖著，這一撥就整個不算 */
       navTouch.locked = performance.now() < navLock;
+      /* 這一撥若沒落在膠卷上，就不會有人重設這個旗標，
+         沿用上一撥的結果會讓換章時靈時不靈 */
+      filmMovedFrame = false;
     }, { passive: true });
 
     addEventListener('touchmove', (e) => {
@@ -4849,10 +4886,21 @@
         ? navTouch.top >= el.scrollHeight - el.clientHeight - 2
         : navTouch.top <= 2);
       if (!wasEdge) { return; }
-      /* 膠卷那一章，滾輪版要求先把片子看到底才放行（滾輪本來就在推片子）。
-         手指不一樣：直滑不會動到膠卷，橫滑才會 —— 沿用同一條規則的話，
-         就得先把十六張全部撥完才離得開這一章。直滑在觸控上意思很明確，
-         所以這裡不看膠卷停在第幾格。 */
+      /* 膠卷那一章：直滑現在是拿來撥片子的，撥到底才換章，和滾輪同一條規則。
+         兩道關卡缺一不可——
+         filmMovedFrame 擋的是「這一撥剛好把片子帶到最後一格」，
+         那一撥的意思是看片子，不該順手把人帶去下一章；
+         filmAtEdge 擋的是「還沒撥到底」。 */
+      if (current === 'teams') {
+        if (filmMovedFrame) { return; }
+        if (!filmAtEdge(dir)) {
+          /* 手指沒落在膠卷上（標題那一帶、圓點那一帶），或是撥得太輕沒跨過一格。
+             什麼都不做的話那兩塊就是死區，所以補上一格，
+             整章任何一處直滑都會有反應 */
+          filmGo(Math.round(filmTarget) + dir);
+          return;
+        }
+      }
       if (performance.now() < navLock) { return; }
       sceneStep(dir);
     }, { passive: true });
