@@ -65,14 +65,24 @@ python3 tools/build-site.py index.html --no-pf --vercel
 
 ## 步驟 2 — 拿 Supabase 的兩個值
 
-左邊 **Project Settings** → **API**：
-
 | 要填的環境變數 | 在 Supabase 的哪裡 |
 |---|---|
-| `SUPABASE_URL` | Project URL，長得像 `https://xxxx.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Project API keys 裡的 **`service_role`**（不是 `anon`） |
+| `SUPABASE_URL` | **Project Settings → Data API** 的 Project URL，長得像 `https://xxxx.supabase.co`。專案首頁標題底下也有，旁邊有 Copy 按鈕 |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Project Settings → API Keys** 的 **Secret keys**，`sb_secret_…` 開頭那一把 |
 
-`service_role` 那一把預設是遮住的，要按 Reveal。
+Supabase 在 2025 年換了金鑰格式。新專案的 API Keys 頁有兩個分頁：
+
+- **Publishable and secret API keys**（新版，預設看到的）
+  - `sb_publishable_…` 給瀏覽器用，**不是我們要的**
+  - `sb_secret_…` 就是這裡要填的那一把
+- **Legacy anon, service_role API keys**（舊版）
+  - 舊專案才有，填 `service_role` 那一把，功能相同
+
+這支函式只是把環境變數的值原封不動放進 `apikey` 與 `Authorization: Bearer`
+兩個標頭，兩種格式的用法一樣，所以程式不需要為此改動。
+實際跑過的是新版 `sb_secret_…`。
+
+金鑰在列表裡預設是遮住的，**直接按旁邊的複製圖示就好，不必按眼睛顯示出來**。
 **這把鑰匙可以繞過所有權限檢查**，等同資料庫的萬用鑰匙，
 只能貼進 Vercel 的環境變數，不要貼到任何其他地方。
 
@@ -90,8 +100,14 @@ python3 tools/build-site.py index.html --no-pf --vercel
 
 ## 步驟 4 — 在 Vercel 填環境變數
 
-Vercel → `chengyunstudio` 專案 → **Settings** → **Environment Variables**。
-每一個都勾 **Production**、**Preview**、**Development** 三個環境：
+Vercel → `chengyunstudio` 專案 → **Settings** → **Environments** → 點進 **Production**，
+往下捲就是 **Environment Variables**。新版介面把變數收進各個環境底下了，
+側邊欄不再有獨立的 Environment Variables 項目。
+
+新增時 **Type** 選哪個：金鑰兩把選 **Secret**（存完就再也看不到值），
+網址與信箱選 **Config**（之後還看得到）。四個都勾
+**Production**、**Preview**、**Development**——真正必要的只有 Production，
+那才是正式網址跑的環境：
 
 | 名稱 | 值 | 必填 |
 |---|---|---|
