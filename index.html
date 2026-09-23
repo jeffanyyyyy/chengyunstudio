@@ -1829,8 +1829,8 @@
   <button class="hover-target font-syne text-sm font-extrabold tracking-[.22em] uppercase" id="brand" type="button">Chengyun.Studio</button>
   <div class="flex items-center gap-5">
     <div class="lang" id="langSwitch" role="group" aria-label="Language">
-      <button class="hover-target" type="button" data-lang="en" aria-current="true">EN</button><i>/</i>
-      <button class="hover-target" type="button" data-lang="zh">中</button><i>/</i>
+      <button class="hover-target" type="button" data-lang="en">EN</button><i>/</i>
+      <button class="hover-target" type="button" data-lang="zh" aria-current="true">中</button><i>/</i>
       <button class="hover-target" type="button" data-lang="ja">日</button>
     </div>
     <span class="text-[.6rem] tracking-[.3em] uppercase text-white/60 hidden sm:block" id="sceneLabel">Index</span>
@@ -4123,10 +4123,15 @@
       if (btn) { applyLang(btn.dataset.lang); }
     });
 
+    /* 預設中文。標記裡寫的是英文原文——那份原文開場時已經收進 I18N.en
+       當備援（見上面那段 harvest），所以這裡一定要真的跑一次 applyLang，
+       不能像以前那樣「沒存過就什麼都不做」。 */
+    const DEFAULT_LANG = 'zh';
     let saved = null;
     try { saved = localStorage.getItem('cy-lang'); } catch (err) { /* 讀不到就用預設 */ }
-    if (saved && saved !== 'en') { applyLang(saved); }
-    else { syncChrome(); syncHoldHint(); }
+    /* 連英文也走 applyLang：不跑的話 <html lang> 會停在標記裡寫死的值，
+       畫面是英文、屬性卻標著中文，搜尋引擎與朗讀軟體都會讀錯 */
+    applyLang((saved && I18N[saved]) ? saved : DEFAULT_LANG);
 
 
 
