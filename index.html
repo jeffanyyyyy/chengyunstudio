@@ -550,7 +550,7 @@
   .menu-blur, .menu-mask { transition: opacity .5s var(--ease), transform .9s var(--ease); }
   .menu-overlay.is-open .menu-blur { opacity: 1; }
   .menu-overlay.is-open .menu-mask { transform: translate(50%, -50%) scale(1); }
-  .menu-row { transition: opacity .5s var(--ease), transform .6s var(--ease), color .45s var(--ease), border-color .45s var(--ease); }
+  .menu-row { transition: opacity .5s var(--ease), transform .6s var(--ease), color .45s var(--ease); }
 
   /* 交給 GSAP 之後就不需要 CSS 補間，免得兩邊打架 */
   .has-gsap .menu-blur,
@@ -558,15 +558,34 @@
 
   /* ── 導覽：六個章節排成一列清單 ─────── */
   .menu-row {
+    position: relative;
     display: flex;
     align-items: baseline;
     gap: 1.25rem;
     padding: .75rem .25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, .14);
     color: rgba(255, 255, 255, .72);
     /* 背景影片透出來之後，文字需要一點陰影才咬得住 */
     text-shadow: 0 1px 18px rgba(0, 0, 0, .55);
-    transition: color .45s var(--ease), transform .55s var(--ease), border-color .45s var(--ease);
+    transition: color .45s var(--ease), transform .55s var(--ease);
+  }
+
+  /* 分隔線改用絕對定位的 ::after 而不是 border-bottom：
+     開選單時要讓它從左邊畫出去，border 的寬度補不了間。
+     絕對定位還有一個必要的理由——.menu-row 是 flex 容器，
+     一般的 ::after 會變成第三個 flex 項目，把版面擠掉。 */
+  .menu-row::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, .14);
+    /* 預設是整條，GSAP 開場時才把 --mrw 從 0 推到 1。
+       這樣沒有 GSAP、或使用者要求減少動態時，線本來就在 */
+    transform: scaleX(var(--mrw, 1));
+    transform-origin: left center;
+    transition: background .45s var(--ease);
   }
 
   .menu-row .idx {
@@ -585,13 +604,23 @@
     line-height: 1.2;
   }
 
+  /* 逐字進場。用 inline-block 而不是包一層 overflow: hidden 的遮罩——
+     overflow 會把元素的基線改成下緣，.menu-row 是 align-items: baseline，
+     編號就會跟著掉下去對不齊。inline-block 的基線還是字的基線，不動到版面 */
+  .menu-row .label .ch {
+    display: inline-block;
+    will-change: transform, opacity;
+  }
+
 
   .menu-overlay.is-open .menu-row:hover,
   .menu-overlay.is-open .menu-row:focus-visible {
     color: #fff;
-    border-color: rgba(255, 255, 255, .4);
     transform: translateX(.75rem);
   }
+
+  .menu-overlay.is-open .menu-row:hover::after,
+  .menu-overlay.is-open .menu-row:focus-visible::after { background: rgba(255, 255, 255, .4); }
 
   .menu-row:hover .idx { color: rgba(255, 255, 255, .7); }
 
@@ -3321,6 +3350,9 @@
              所以先把算好的 px 讀出來，再從它的三成拉回去；
              收尾 clearProps 交還給 CSS，換螢幕寬度時才跟得上。 */
           const ro = row.querySelector('.nm-ro');
+          /* 同選單那邊：先清行內樣式再讀，否則讀到的是上一次留下的起始值。
+             這一章看到一半就換走的話 clearProps 不會觸發，值會一次比一次小 */
+          ro.style.letterSpacing = '';
           const ls = parseFloat(getComputedStyle(ro).letterSpacing) || 0;
           if (ls) {
             tl.fromTo(ro,
@@ -3626,20 +3658,74 @@
       /* 起始狀態用 gsap.set 而不是寫在 CSS 裡：GSAP 沒載到時內容照樣看得到 */
       gsap.set(menuBlur, { opacity: 0 });
       gsap.set(menuMask, { scale: 0 });
-      gsap.set(menuRows, { opacity: 0, y: 46 });
+      gsap.set(menuRows, { opacity: 0 });
+    }
+
+    /* 把每一項的字拆成一個一個的 span。換語言之後 applyLang 會把
+       textContent 整個換掉、拆好的 span 也跟著沒了，所以每次開選單都重拆一次
+       （fxSplitChars 自己會認 data-fx-split，拆過的不會白做工） */
+    function menuSplit() {
+      menuRows.forEach((row) => {
+        const label = row.querySelector('.label');
+        if (label) { fxSplitChars(label); }
+      });
     }
 
     function buildMenuTl() {
-      /* 模糊先淡入、圓形遮罩從右上角擴散，項目最後依序由下滑出 */
+      /* 模糊先淡入、圓形遮罩從右上角擴散。
+         每一項再分成三拍：分隔線從左邊畫出去、編號拉開字距浮現、
+         標題一個字一個字升上來。三件事錯開，看起來才像有人安排過，
+         而不是整排一起淡入。 */
       const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
       tl.to(menuBlur, { opacity: 1, duration: .5, ease: 'power2.out' }, 0)
-        .to(menuMask, { scale: 1, duration: 1.05, ease: 'power3.inOut' }, 0)
-        .to(menuRows, { opacity: 1, y: 0, duration: .85, stagger: .07 }, .28);
+        .to(menuMask, { scale: 1, duration: 1.05, ease: 'power3.inOut' }, 0);
+
+      menuRows.forEach((row, i) => {
+        const at = .26 + i * .08;
+        tl.set(row, { opacity: 1 }, at);
+
+        /* 分隔線：先畫線，再上字 */
+        tl.fromTo(row, { '--mrw': 0 }, { '--mrw': 1, duration: .72, ease: 'power3.inOut' }, at);
+
+        /* 編號：字距從緊拉開到定位。CSS 寫的是 em，GSAP 補不了單位，
+           所以讀出算好的 px 再補，收尾 clearProps 交還給 CSS */
+        const idx = row.querySelector('.idx');
+        if (idx) {
+          /* 讀之前一定要先把行內樣式清掉。不清的話讀到的是上一次動畫留下的
+             起始值（收尾的 clearProps 只在正著跑完時才會觸發，倒帶關選單
+             不會），每開一次就再縮一次，開到第三次字距已經是 0、
+             整段動畫看起來就沒在動了。 */
+          idx.style.letterSpacing = '';
+          const ls = parseFloat(getComputedStyle(idx).letterSpacing) || 0;
+          tl.fromTo(idx,
+            { opacity: 0, letterSpacing: ls ? (ls * .2).toFixed(2) + 'px' : '0px' },
+            { opacity: 1, letterSpacing: ls ? ls.toFixed(2) + 'px' : 'normal', duration: 1.1,
+              ease: 'expo.out', clearProps: 'letterSpacing' }, at + .06);
+        }
+
+        const chars = row.querySelectorAll('.label .ch');
+        if (chars.length) {
+          tl.fromTo(chars,
+            { opacity: 0, yPercent: 118 },
+            { opacity: 1, yPercent: 0, duration: .82, ease: 'expo.out', stagger: .026 }, at + .1);
+        }
+      });
       return tl;
     }
 
     function openMenu() {
       if (menuOverlay.classList.contains('is-open')) { return; }
+
+      /* 拆字與重建要在掛上 is-open 之前：時間軸一建好，fromTo 的起始狀態
+         就立刻套上去，這樣覆蓋層現身的第一幀就已經是「還沒進場」的樣子。
+         每次都重建是因為換語言之後舊的 span 已經被丟掉，
+         留著舊時間軸會對著不存在的節點做動畫，字就直接出現不會動。 */
+      if (hasGsap && !reduce) {
+        menuSplit();
+        if (menuTl) { menuTl.kill(); }
+        menuTl = buildMenuTl();
+      }
+
       menuOverlay.classList.add('is-open');
       menuOverlay.removeAttribute('aria-hidden');
       root.classList.add('is-menu');
@@ -3648,12 +3734,11 @@
       backBtn.hidden = true;
 
       if (hasGsap && !reduce) {
-        if (!menuTl) { menuTl = buildMenuTl(); }
         menuTl.timeScale(1).play(0);
       } else if (hasGsap) {
         gsap.set(menuBlur, { opacity: 1 });
         gsap.set(menuMask, { scale: 1 });
-        gsap.set(menuRows, { opacity: 1, y: 0 });
+        gsap.set(menuRows, { opacity: 1 });
       }
       if (keyboardNav) { menuRows[0].focus({ preventScroll: true }); }
     }
@@ -3675,7 +3760,7 @@
         menuTl.timeScale(1.9).reverse();
         menuTl.eventCallback('onReverseComplete', () => { menuTl.eventCallback('onReverseComplete', null); finish(); });
       } else {
-        if (hasGsap) { gsap.set(menuBlur, { opacity: 0 }); gsap.set(menuMask, { scale: 0 }); gsap.set(menuRows, { opacity: 0, y: 46 }); }
+        if (hasGsap) { gsap.set(menuBlur, { opacity: 0 }); gsap.set(menuMask, { scale: 0 }); gsap.set(menuRows, { opacity: 0 }); }
         finish();
       }
     }
