@@ -2406,6 +2406,7 @@
            畫面會卡在上一個語言 */
         'about.m1': 'clarity, made transparent', 'about.m2': 'the ground worked, step by step',
         'hero.top': 'View All Projects', 'hero.hold': 'Hold or Scroll',
+        'hero.holdTouch': 'Swipe up or hold',
         'label.intro': '— Entering', 'hint.intro': 'Scroll to run the film · Esc to go back',
         'intro.hint': 'Scroll to continue', 'intro.skip': 'Skip →',
         'teams.b1': 'Ten-plus years hosting · Mandarin and English',
@@ -2575,6 +2576,7 @@
         'teams.w11b.g2': '國內外藝術節與極限巡演',
         'teams.w11b.l2': '活躍於各大國際藝術節、戶外文化展演、大型商業造勢與跨界跨年晚會，以極限火舞與獨創火流星技藝享譽業界。',
         'hero.top': '瀏覽所有章節', 'hero.hold': '長按或捲動進入',
+        'hero.holdTouch': '上滑或長按進入',
         'label.intro': '— 進場', 'hint.intro': '捲動推進影片 · Esc 返回',
         'intro.hint': '捲動繼續', 'intro.skip': '跳過 →',
         'contact.t0': '澄耘活動工作室 有限公司',
@@ -2814,6 +2816,7 @@
         'teams.w11b.g2': '芸術祭と巡演',
         'teams.w11b.l2': '国際芸術祭、屋外の文化公演、大型の商業キャンペーン、ジャンルを越えたカウントダウンなどで活動。エクストリームな火舞と独自の火流星で知られています。',
         'hero.top': 'すべての章を見る', 'hero.hold': '長押し／スクロール',
+        'hero.holdTouch': '上にスワイプ／長押し',
         'label.intro': '— 入場', 'hint.intro': 'スクロールで進む · Esc で戻る',
         'intro.hint': 'スクロールで進む', 'intro.skip': 'スキップ →',
         'contact.t0': '澄耘活動工作室 有限公司',
@@ -3044,6 +3047,16 @@
     let pfSync = () => { /* 作品索引初始化前先當作沒事 */ };
     const t = (key) => (I18N[lang] && I18N[lang][key]) || I18N.en[key] || '';
 
+    /* 觸控裝置上沒有「捲動」這回事，講上滑才對得上手指做的動作。
+       開場時如果語言就是預設的英文，applyLang 根本不會被呼叫，
+       所以這件事不能只寫在 applyLang 裡 */
+    function syncHoldHint() {
+      if (fine) { return; }
+      const hint = document.querySelector('[data-i18n="hero.hold"]');
+      const v = t('hero.holdTouch');
+      if (hint && v) { hint.textContent = v; }
+    }
+
     function applyLang(next) {
       if (!I18N[next]) { return; }
       lang = next;
@@ -3056,6 +3069,7 @@
         const v = t(el.dataset.i18nHtml);
         if (v) { el.innerHTML = v; }
       });
+      syncHoldHint();
       document.querySelectorAll('#langSwitch button').forEach((b) => {
         b.setAttribute('aria-current', String(b.dataset.lang === next));
       });
@@ -3709,6 +3723,15 @@
        和長按共用同一條進度線：捲多少、線就走多少，走滿就進場。
        停手沒走滿會自己退回去，所以誤觸不會把人帶走。 */
     const HERO_SPAN = 620;                             /* 要捲多少 px 才走滿 */
+    /* 觸控的倍率。滾輪一格就是好幾十 px，手指不是——
+       用 1.5 倍的話得走 410px 才走滿，等於整個螢幕高度，
+       一般人上滑一次大約 200px，兩次之間又超過回收的時間，
+       結果是怎麼滑都進不去。3.2 倍讓一次果斷的上滑就走滿。 */
+    const HERO_TOUCH_GAIN = 3.2;
+    /* 快撥捷徑：手機上最自然的手勢是又快又短的一撥，
+       距離不夠但速度夠（px/ms）就直接放行 */
+    const HERO_FLICK_PX = 60;
+    const HERO_FLICK_V = .9;
     const heroScene = scenes.get('hero');
     let heroPush = 0;
     let heroDecay = 0;
@@ -3723,15 +3746,18 @@
         release();
         return;
       }
-      /* 停手 320ms 後往回收 */
+      /* 停手之後才往回收。原本是等 320ms、再用每格 7% 的速度倒掉，
+         整個窗口只有半秒多——比一般人「滑一下、再滑一下」的節奏還短，
+         所以第二次上滑等於從零開始，永遠補不滿。
+         改成等 900ms、每格 3%，兩次從容的上滑才累積得起來。 */
       clearTimeout(heroDecay);
       heroDecay = setTimeout(() => {
         const back = setInterval(() => {
-          heroPush = Math.max(0, heroPush - HERO_SPAN * .07);
+          heroPush = Math.max(0, heroPush - HERO_SPAN * .03);
           setProgress(heroPush / HERO_SPAN);
           if (heroPush <= 0) { clearInterval(back); }
         }, 16);
-      }, 320);
+      }, 900);
     }
 
     heroScene.addEventListener('wheel', (e) => {
@@ -3742,10 +3768,12 @@
     }, { passive: false });
 
     /* 觸控：往上滑＝前進。位移超過門檻就不算長按，改當成滑動 */
-    const heroSwipe = { on: false, id: null, y: 0, moved: 0 };
+    const heroSwipe = { on: false, id: null, y: 0, y0: 0, t: 0, moved: 0 };
     heroScene.addEventListener('pointerdown', (e) => {
       heroSwipe.on = true;
       heroSwipe.y = e.clientY;
+      heroSwipe.y0 = e.clientY;
+      heroSwipe.t = performance.now();
       heroSwipe.moved = 0;
       heroSwipe.id = e.pointerId;
       /* 一定要捕獲指標：不捕獲的話，手指一移動就會收到 pointercancel，
@@ -3759,9 +3787,25 @@
       heroSwipe.moved += Math.abs(dy);
       if (heroSwipe.moved < 14) { return; }
       if (holding) { endHold(false); }                 /* 手指開始移動，那不是長按 */
-      heroAdd(dy * 1.5);
+      heroAdd(dy * (e.pointerType === 'mouse' ? 1.5 : HERO_TOUCH_GAIN));
     });
-    const heroSwipeEnd = () => { heroSwipe.on = false; };
+
+    /* 放開手時再看一次：走得不夠遠、但撥得夠快的話也算數。
+       純粹靠距離累積的話，短而果斷的一撥會被判成沒動過 */
+    const heroSwipeEnd = (e) => {
+      if (!heroSwipe.on) { return; }
+      heroSwipe.on = false;
+      if (current !== 'hero' || busy || holding || !e || e.pointerType === 'mouse') { return; }
+      const up = heroSwipe.y0 - e.clientY;             /* 正值＝往上滑 */
+      const ms = Math.max(performance.now() - heroSwipe.t, 1);
+      if (up >= HERO_FLICK_PX && up / ms >= HERO_FLICK_V) {
+        heroPush = 0;
+        clearTimeout(heroDecay);
+        setProgress(1);
+        introPreload();
+        release();
+      }
+    };
     addEventListener('pointerup', heroSwipeEnd);
     addEventListener('pointercancel', heroSwipeEnd);
 
@@ -4078,7 +4122,7 @@
     let saved = null;
     try { saved = localStorage.getItem('cy-lang'); } catch (err) { /* 讀不到就用預設 */ }
     if (saved && saved !== 'en') { applyLang(saved); }
-    else { syncChrome(); }
+    else { syncChrome(); syncHoldHint(); }
 
 
 
@@ -4764,21 +4808,40 @@
       if (navEdge > 90) { sceneStep(dir); }
     }, { passive: false });
 
-    /* 觸控：手指放開時，如果一開始就已經在邊界、而且滑得夠遠，就換章節 */
-    const navTouch = { y: 0, top: 0, edge: false };
+    /* 觸控：手指放開時，如果一開始就已經在邊界、而且滑得夠果斷，就換章節 */
+    const navTouch = { y: 0, top: 0, edge: false, t: 0, far: 0, locked: false };
     addEventListener('touchstart', (e) => {
       if (navBusy() || current === 'hero' || current === 'intro') { return; }
       const el = scenes.get(current).querySelector('.scene-inner');
       navTouch.y = e.touches[0].clientY;
       navTouch.top = el ? el.scrollTop : 0;
       navTouch.edge = true;
+      navTouch.t = performance.now();
+      navTouch.far = 0;
+      /* 這一撥是在換場冷卻中起手的。冷卻在放開手之前剛好到期的話，
+         原本會補上一次換章——「滑一下跳兩章」就是這樣來的。
+         起手時鎖著，這一撥就整個不算 */
+      navTouch.locked = performance.now() < navLock;
+    }, { passive: true });
+
+    addEventListener('touchmove', (e) => {
+      if (!navTouch.edge || !e.touches[0]) { return; }
+      const dy = navTouch.y - e.touches[0].clientY;
+      if (Math.abs(dy) > Math.abs(navTouch.far)) { navTouch.far = dy; }
     }, { passive: true });
 
     addEventListener('touchend', (e) => {
       if (!navTouch.edge || navBusy() || current === 'hero' || current === 'intro') { return; }
       navTouch.edge = false;
-      const dy = navTouch.y - (e.changedTouches[0] ? e.changedTouches[0].clientY : navTouch.y);
-      if (Math.abs(dy) < 70) { return; }
+      if (navTouch.locked) { return; }
+      const end = navTouch.y - (e.changedTouches[0] ? e.changedTouches[0].clientY : navTouch.y);
+      /* 取過程中走得最遠的那一刻，不是放手當下的位置：
+         手指收尾時常常會往回帶一點，只看終點會把很果斷的一撥判成沒動 */
+      const dy = Math.abs(end) > Math.abs(navTouch.far) ? end : navTouch.far;
+      const v = Math.abs(dy) / Math.max(performance.now() - navTouch.t, 1);   /* px/ms */
+      /* 慢慢拖要拖得夠遠；又快又短的一撥就不必。
+         手機上最自然的就是後者，只認距離的話那種會完全沒反應 */
+      if (Math.abs(dy) < 70 && !(Math.abs(dy) >= 30 && v >= .55)) { return; }
       const dir = dy > 0 ? 1 : -1;
       const el = scenes.get(current).querySelector('.scene-inner');
       /* 手指按下時就已經到底／到頂，才算是要換章節 */
