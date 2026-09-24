@@ -1231,6 +1231,9 @@
     position: relative;
     height: 100%;
     border-radius: 2px;
+    /* 照片本身由 filmArtLoad() 延後掛上（見那支函式的說明），
+       這裡先把鋪法準備好 */
+    background-size: cover;
     display: grid;
     place-items: center;
     /* 有照片時字壓在下緣的漸層上，才不會蓋住人臉 */
@@ -2086,52 +2089,52 @@
         <div class="film-reel" id="filmTrack">
           <!-- 一位主持人兩格：第一張點開是介紹，第二張點開是過往經歷 -->
           <article class="frame">
-            <div class="frame-shot" style="--a:#2b3a66; --b:#0d1220; background-image: url(/assets/team/01.jpg); background-size: cover; background-position: center 26%"><span class="num">01</span><span class="frame-role" data-i18n="teams.s1">Host Gisele | Profile</span></div>
+            <div class="frame-shot" style="--a:#2b3a66; --b:#0d1220" data-shot="/assets/team/01.jpg" data-pos="center 26%"><span class="num">01</span><span class="frame-role" data-i18n="teams.s1">Host Gisele | Profile</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#4a2a2a; --b:#170d0d; background-image: url(/assets/team/02.jpg); background-size: cover; background-position: center 50%"><span class="num">02</span><span class="frame-role" data-i18n="teams.s2">Host Gisele | Selected work</span></div>
+            <div class="frame-shot" style="--a:#4a2a2a; --b:#170d0d" data-shot="/assets/team/02.jpg" data-pos="center 50%"><span class="num">02</span><span class="frame-role" data-i18n="teams.s2">Host Gisele | Selected work</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#1f4a4a; --b:#0b1516; background-image: url(/assets/team/03.jpg); background-size: cover; background-position: center 16%"><span class="num">03</span><span class="frame-role" data-i18n="teams.s3">Host Wendy | Profile</span></div>
+            <div class="frame-shot" style="--a:#1f4a4a; --b:#0b1516" data-shot="/assets/team/03.jpg" data-pos="center 16%"><span class="num">03</span><span class="frame-role" data-i18n="teams.s3">Host Wendy | Profile</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#3d3a18; --b:#14130a; background-image: url(/assets/team/04.jpg); background-size: cover; background-position: center 10%"><span class="num">04</span><span class="frame-role" data-i18n="teams.s4">Host Wendy | Selected work</span></div>
+            <div class="frame-shot" style="--a:#3d3a18; --b:#14130a" data-shot="/assets/team/04.jpg" data-pos="center 10%"><span class="num">04</span><span class="frame-role" data-i18n="teams.s4">Host Wendy | Selected work</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#33265c; --b:#100c1c; background-image: url(/assets/team/05.jpg); background-size: cover; background-position: center 18%"><span class="num">05</span><span class="frame-role" data-i18n="teams.s5">Host Nina | Profile</span></div>
+            <div class="frame-shot" style="--a:#33265c; --b:#100c1c" data-shot="/assets/team/05.jpg" data-pos="center 18%"><span class="num">05</span><span class="frame-role" data-i18n="teams.s5">Host Nina | Profile</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#2d4a3a; --b:#0b1510; background-image: url(/assets/team/06.jpg); background-size: cover; background-position: center 50%"><span class="num">06</span><span class="frame-role" data-i18n="teams.s6">Host Nina | Selected work</span></div>
+            <div class="frame-shot" style="--a:#2d4a3a; --b:#0b1510" data-shot="/assets/team/06.jpg" data-pos="center 50%"><span class="num">06</span><span class="frame-role" data-i18n="teams.s6">Host Nina | Selected work</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#563d2a; --b:#18100b; background-image: url(/assets/team/07.jpg); background-size: cover; background-position: center 17%"><span class="num">07</span><span class="frame-role" data-i18n="teams.s7">Host Jessica | Profile</span></div>
+            <div class="frame-shot" style="--a:#563d2a; --b:#18100b" data-shot="/assets/team/07.jpg" data-pos="center 17%"><span class="num">07</span><span class="frame-role" data-i18n="teams.s7">Host Jessica | Profile</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#4a2a3a; --b:#170d12; background-image: url(/assets/team/08.jpg); background-size: cover; background-position: center 80%"><span class="num">08</span><span class="frame-role" data-i18n="teams.s8">Host Jessica | Selected work</span></div>
+            <div class="frame-shot" style="--a:#4a2a3a; --b:#170d12" data-shot="/assets/team/08.jpg" data-pos="center 80%"><span class="num">08</span><span class="frame-role" data-i18n="teams.s8">Host Jessica | Selected work</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#25505a; --b:#0a1619; background-image: url(/assets/team/09.jpg); background-size: cover; background-position: center 12%"><span class="num">09</span><span class="frame-role" data-i18n="teams.s9">Host TongTong | Profile</span></div>
+            <div class="frame-shot" style="--a:#25505a; --b:#0a1619" data-shot="/assets/team/09.jpg" data-pos="center 12%"><span class="num">09</span><span class="frame-role" data-i18n="teams.s9">Host TongTong | Profile</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#20405e; --b:#0a131c; background-image: url(/assets/team/10.jpg); background-size: cover; background-position: center 20%"><span class="num">10</span><span class="frame-role" data-i18n="teams.s10">Host TongTong | Selected work</span></div>
+            <div class="frame-shot" style="--a:#20405e; --b:#0a131c" data-shot="/assets/team/10.jpg" data-pos="center 20%"><span class="num">10</span><span class="frame-role" data-i18n="teams.s10">Host TongTong | Selected work</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#3a3550; --b:#111018; background-image: url(/assets/team/11.jpg); background-size: cover; background-position: center 50%"><span class="num">11</span><span class="frame-role" data-i18n="teams.s11">Band Belina Chang</span></div>
+            <div class="frame-shot" style="--a:#3a3550; --b:#111018" data-shot="/assets/team/11.jpg" data-pos="center 50%"><span class="num">11</span><span class="frame-role" data-i18n="teams.s11">Band Belina Chang</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#1b2436; --b:#080b12; background-image: url(/assets/team/12.jpg); background-size: cover; background-position: center 5%"><span class="num">12</span><span class="frame-role" data-i18n="teams.s12">Band LC Li</span></div>
+            <div class="frame-shot" style="--a:#1b2436; --b:#080b12" data-shot="/assets/team/12.jpg" data-pos="center 5%"><span class="num">12</span><span class="frame-role" data-i18n="teams.s12">Band LC Li</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#24467f; --b:#0b1426; background-image: url(/assets/team/13.jpg); background-size: cover; background-position: center 50%"><span class="num">13</span><span class="frame-role" data-i18n="teams.s13">Dance troupe Funky Girls</span></div>
+            <div class="frame-shot" style="--a:#24467f; --b:#0b1426" data-shot="/assets/team/13.jpg" data-pos="center 50%"><span class="num">13</span><span class="frame-role" data-i18n="teams.s13">Dance troupe Funky Girls</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#3d5a2a; --b:#101a0b; background-image: url(/assets/team/14.jpg); background-size: cover; background-position: center 50%"><span class="num">14</span><span class="frame-role" data-i18n="teams.s14">Dance troupe Manga African War Drums</span></div>
+            <div class="frame-shot" style="--a:#3d5a2a; --b:#101a0b" data-shot="/assets/team/14.jpg" data-pos="center 50%"><span class="num">14</span><span class="frame-role" data-i18n="teams.s14">Dance troupe Manga African War Drums</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#2a2a2a; --b:#0d0d0d; background-image: url(/assets/team/15.jpg); background-size: cover; background-position: center 45%"><span class="num">15</span><span class="frame-role" data-i18n="teams.s15">Performance act Brian Lin, magician</span></div>
+            <div class="frame-shot" style="--a:#2a2a2a; --b:#0d0d0d" data-shot="/assets/team/15.jpg" data-pos="center 45%"><span class="num">15</span><span class="frame-role" data-i18n="teams.s15">Performance act Brian Lin, magician</span></div>
           </article>
           <article class="frame">
-            <div class="frame-shot" style="--a:#6b2a10; --b:#1c0c06; background-image: url(/assets/team/16.jpg); background-size: cover; background-position: center 50%"><span class="num">16</span><span class="frame-role" data-i18n="teams.s16">Performance act Chixingzhe, fire dance</span></div>
+            <div class="frame-shot" style="--a:#6b2a10; --b:#1c0c06" data-shot="/assets/team/16.jpg" data-pos="center 50%"><span class="num">16</span><span class="frame-role" data-i18n="teams.s16">Performance act Chixingzhe, fire dance</span></div>
           </article>
         </div>
       </div>
@@ -4403,6 +4406,27 @@
     /* 片格內容：src 填上圖片路徑即可，載好會自動重畫貼圖；
        focus 是等比裁切時的垂直焦點（0 = 貼齊上緣、1 = 貼齊下緣），
        直式照片放進橫式片格會裁掉上下，用它把人臉留在畫面裡 */
+    /* ── 片格照片延後載入 ──────────────────────────
+       團隊那十六張照片加起來約 1.6MB。原本寫在片格的行內樣式裡，
+       而分鏡只是 visibility: hidden、不是 display: none，
+       所以瀏覽器在首頁就把整批抓下來，和首頁那支背景影片搶頻寬——
+       那時候使用者連站都還沒進。
+       改成等人真的要進來了才掛上去：首頁的長按／上滑會觸發（introPreload），
+       從選單直接跳到團隊那一章也會觸發（cy:scene）。 */
+    let filmArtOn = false;
+    const filmArtPending = [];
+
+    function filmArtLoad() {
+      if (filmArtOn) { return; }
+      filmArtOn = true;
+      document.querySelectorAll('.frame-shot[data-shot]').forEach((el) => {
+        el.style.backgroundImage = 'url(' + el.dataset.shot + ')';
+        el.style.backgroundPosition = el.dataset.pos || 'center';
+      });
+      /* GL 版的材質也是同一批圖，一起放行 */
+      while (filmArtPending.length) { filmArtPending.shift()(); }
+    }
+
     const FILM_ART = [
       { a: '#2b3a66', b: '#0d1220', src: '/assets/team/01.jpg', focus: .26 },
       { a: '#4a2a2a', b: '#170d0d', src: '/assets/team/02.jpg', focus: .50 },
@@ -4628,15 +4652,19 @@
         rig.add(mesh);
 
         if (art.src) {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => {
-            art.img = img; paint(c, art, i); tex.needsUpdate = true;
-            /* 照片是後到的。停穩之後迴圈可能已經收工，
-               不叫醒它的話這一張就永遠停在灰底 */
-            filmStart();
+          const load = () => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              art.img = img; paint(c, art, i); tex.needsUpdate = true;
+              /* 照片是後到的。停穩之後迴圈可能已經收工，
+                 不叫醒它的話這一張就永遠停在灰底 */
+              filmStart();
+            };
+            img.src = art.src;
           };
-          img.src = art.src;
+          /* 已經放行過就直接載（GL 可能因為換裝置或 context lost 重建過一次） */
+          if (filmArtOn) { load(); } else { filmArtPending.push(load); }
         }
         return { mesh: mesh, mat: mat, tex: tex, canvas: c };
       });
@@ -4889,6 +4917,9 @@
           filmMetrics();
           if (filmGL) { filmGL.resize(); }
           if (dir) { filmTarget = dir > 0 ? 0 : filmMax; filmPos = filmTarget; }
+          /* 從選單直接跳過來的人沒碰過首頁，introPreload 不會跑到。
+           這是最後一道保險，不然這一章會整片留在灰底 */
+          filmArtLoad();
           filmStart();
         });
       }
@@ -5115,6 +5146,9 @@
       /* 使用者開始要進站了，內頁那支背景影片先帶起來。
          它的 preload 是 none，不主動戳就要等到真的 play() 才開始下載 */
       try { restVideo.load(); } catch (err) { /* 載不動就等 play() 時再說 */ }
+      /* 團隊那十六張照片也趁現在開始抓。從這裡到使用者滑到第三章
+         至少還有過場影片那段時間，來得及 */
+      filmArtLoad();
       /* 直向螢幕另外給一支直的素材。
 
          原素材是 16:9，直向手機是 9:19.5。硬塞只有兩條路：
