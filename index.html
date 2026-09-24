@@ -1841,7 +1841,9 @@
   <!-- 內頁的背景：水晶落定之後的那一段，倒放接正放，循環點看不出來。
        首頁不顯示，離開首頁才淡進來；過場結束進到關於我們時從第 0 秒起播，
        而第 0 秒正是過場影片的最後一格，所以水晶是「停在那裡」而不是重來一次 -->
-  <video class="stage-video stage-rest" id="restVideo" muted loop playsinline preload="auto"
+  <!-- preload 不設 auto：這支要進到內頁章節才用得到，開場就搶頻寬
+       只會拖慢首頁那支。第一次碰首頁時由 introPreload() 順手把它帶起來 -->
+  <video class="stage-video stage-rest" id="restVideo" muted loop playsinline preload="none"
          poster="/assets/poster-rest.jpg">
     <source src="/assets/crystal-rest.mp4" type="video/mp4" />
   </video>
@@ -3209,6 +3211,10 @@
     const footHint = document.getElementById('footHint');
     let current = 'hero';
     let busy = false;
+    /* 全站那支 rAF 現在沒事就睡（見檔尾的 frame／frameWake）。
+       旗標宣告在這裡而不是跟著函式放檔尾：frameWake 會被前面的
+       事件處理器呼叫，let 留在檔尾會踩到暫時性死區 */
+    let frameOn = false;
 
     /* 交給 GSAP 之後，.is-active 不再負責 opacity，
        起始的首屏必須自己設一次，否則一載入就是空白畫面 */
@@ -3416,6 +3422,7 @@
       addEventListener('mousemove', (e) => {
         fxPar.tx = ((e.clientX / innerWidth) - .5) * 2 * FX_PAR_MAX;
         fxPar.ty = ((e.clientY / innerHeight) - .5) * 2 * FX_PAR_MAX;
+        frameWake();
       }, { passive: true });
     }
 
@@ -3558,6 +3565,7 @@
       /* 文字特效：轉場蓋定之後才播，不然滑動途中就演完了 */
       fxParTarget = to.querySelector('.fx-parallax');
       if (!fxParTarget) { fxPar.x = fxPar.y = fxPar.tx = fxPar.ty = 0; }
+      else { frameWake(); }
       /* 和內容浮現同一刻開始。兩邊時間點不同的話，一章的內容會分成
          前後兩波進場，看起來就像同一個動畫演了兩次 */
       clearTimeout(fxTimer);
@@ -3781,6 +3789,7 @@
       clearTimeout(heroDecay);
       holding = true;
       holdStart = performance.now();
+      frameWake();
       ring.classList.add('is-hold');
       root.classList.add('is-holding');
     }
@@ -4175,6 +4184,7 @@
         dot.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
         dot.classList.remove('is-idle');
         ring.classList.remove('is-idle');
+        frameWake();
       });
       document.addEventListener('mouseover', (e) => {
         if (e.target.closest('.hover-target')) { ring.classList.add('is-near'); }
@@ -4331,14 +4341,30 @@
       filmName.classList.add('is-in');
     };
 
+    /* 停穩之後降到每秒十五張。
+       片子不動的時候，畫面上只剩中央那格 1.4 秒週期、幅度不到半個畫素的浮動，
+       十五張和六十張看不出差別，GPU 的工作量卻只剩四分之一。
+       在拖、在收斂的時候照樣全速——手感不能省。
+       整個迴圈不能停掉：浮動要繼續，而且照片是非同步載進來的，
+       迴圈停著的話後到的那幾張永遠不會被畫出來（見 img.onload）。 */
+    const FILM_IDLE_MS = 1000 / 15;
+    let filmDrew = 0;
+
     function filmFrame(now) {
+      /* 先判斷再收斂：這一幀是不是還在動，要看收斂之前的距離 */
+      const moving = filmDrag.on || filmPos !== filmTarget;
       if (!filmDrag.on) {
         /* 慣性：沒有在拖曳時往目標收斂，離得越近走得越慢 */
         filmPos += (filmTarget - filmPos) * (reduce ? 1 : .12);
         if (Math.abs(filmTarget - filmPos) < .0005) { filmPos = filmTarget; }
       }
-      filmSetIndex(Math.round(filmPos));
-      filmRender(now);
+      if (moving || now - filmDrew >= FILM_IDLE_MS) {
+        filmDrew = now;
+        filmSetIndex(Math.round(filmPos));
+        filmRender(now);
+      }
+      /* 要求減少動態的人連那個浮動都不該看到，停穩就整個收工 */
+      if (reduce && !moving) { filmRunning = false; return; }
       filmRaf = requestAnimationFrame(filmFrame);
     }
 
@@ -4604,7 +4630,12 @@
         if (art.src) {
           const img = new Image();
           img.crossOrigin = 'anonymous';
-          img.onload = () => { art.img = img; paint(c, art, i); tex.needsUpdate = true; };
+          img.onload = () => {
+            art.img = img; paint(c, art, i); tex.needsUpdate = true;
+            /* 照片是後到的。停穩之後迴圈可能已經收工，
+               不叫醒它的話這一張就永遠停在灰底 */
+            filmStart();
+          };
           img.src = art.src;
         }
         return { mesh: mesh, mat: mat, tex: tex, canvas: c };
@@ -4616,7 +4647,10 @@
         const w = filmGLWrap.clientWidth;
         const h = filmGLWrap.clientHeight;
         if (!w || !h) { return; }
-        renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+        /* 手機的 devicePixelRatio 常常是 3，照著畫等於九倍的填色量。
+           膠卷上的照片在畫面上只有兩三公分寬，1.5 倍已經看不出鋸齒，
+           但 GPU 的工作量只剩 2 倍時的 56%。桌機維持 2 倍 */
+        renderer.setPixelRatio(Math.min(devicePixelRatio || 1, fine ? 2 : 1.5));
         renderer.setSize(w, h, false);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
@@ -4862,8 +4896,21 @@
     });
 
     addEventListener('visibilitychange', () => {
-      if (document.hidden) { filmStop(); }
-      else if (current === 'teams') { filmStart(); }
+      if (document.hidden) {
+        filmStop();
+        /* 背景影片也一起停。瀏覽器不保證會替我們做這件事，
+           而在背景分頁裡一直解碼一支循環影片，在手機上是實打實的耗電 */
+        bgVideo.pause();
+        restVideo.pause();
+        return;
+      }
+      if (current === 'teams') { filmStart(); }
+      if (reduce) { return; }
+      /* 回到前景：把該播的那一支接回去。
+         被不透明章節蓋住的時候本來就該維持暫停，不要吵醒它 */
+      if (OPAQUE_SCENES.indexOf(current) < 0) {
+        (restOn ? restVideo : bgVideo).play().catch(() => { /* 被擋就維持靜幀 */ });
+      }
     });
 
     addEventListener('resize', () => {
@@ -5065,6 +5112,9 @@
     function introPreload() {
       if (introLoaded || reduce) { return; }
       introLoaded = true;
+      /* 使用者開始要進站了，內頁那支背景影片先帶起來。
+         它的 preload 是 none，不主動戳就要等到真的 play() 才開始下載 */
+      try { restVideo.load(); } catch (err) { /* 載不動就等 play() 時再說 */ }
       /* 直向螢幕另外給一支直的素材。
 
          原素材是 16:9，直向手機是 9:19.5。硬塞只有兩條路：
@@ -5400,18 +5450,34 @@
 
 
 
-    /* ══ 單一 rAF ══════════════════════════════════════════════ */
+    /* ══ 單一 rAF ══════════════════════════════════════════════
+       這支迴圈只服務三件事：長按的進度、滑鼠游標環、大標視差。
+       三件都靜下來就讓它睡，別再排下一幀——
+       一支永不結束的 rAF 會讓瀏覽器一直以為畫面在動，
+       合成器跟 GPU 就跟著醒著，在手機上就是白白耗電。
+       有事情發生時由 frameWake() 叫醒。 */
+    function frameWake() {
+      if (frameOn) { return; }
+      frameOn = true;
+      requestAnimationFrame(frame);
+    }
+
     function frame(now) {
+      let more = false;
+
       if (holding) {
         const p = clamp((now - holdStart) / HOLD_MS, 0, 1);
         setProgress(p);
         if (p >= 1) { release(); }
+        else { more = true; }
       }
 
       if (fine) {
         ringX = lerp(ringX, mouseX, 0.16);
         ringY = lerp(ringY, mouseY, 0.16);
         ring.style.transform = `translate(${ringX}px, ${ringY}px)`;
+        /* 追到剩不到十分之一個畫素就算到位了 */
+        if (Math.abs(mouseX - ringX) > .1 || Math.abs(mouseY - ringY) > .1) { more = true; }
       }
 
       /* 大標的視差。lerp 讓它慢半拍跟上，直接跟會太神經質。
@@ -5425,12 +5491,14 @@
           fxPar.y = lerp(fxPar.y, fxPar.ty, .06);
           fxParTarget.style.transform =
             'translate3d(' + fxPar.x.toFixed(2) + 'px,' + fxPar.y.toFixed(2) + 'px,0)';
+          more = true;
         }
       }
 
-      requestAnimationFrame(frame);
+      if (more) { requestAnimationFrame(frame); }
+      else { frameOn = false; }
     }
-    requestAnimationFrame(frame);
+    frameWake();
   })();
 </script>
 
